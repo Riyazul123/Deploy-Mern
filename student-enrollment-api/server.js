@@ -13,7 +13,7 @@ dotenv.config();
 const app = express();
 app.use(cors(
     {
-        origin: ["https://deploy-mern-frontend.vercel.app"],
+        origin: ["https://student-management-admin.vercel.app"],
         methods: ["POST", "GET"],
         credentials: true
     }
