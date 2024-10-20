@@ -1,0 +1,48 @@
+.payment-slip {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+  }
+  
+  .payment-slip h2,
+  .payment-slip h3 {
+    text-align: center;
+    margin: 0;
+  }
+  
+  .payment-slip hr {
+    margin: 15px 0;
+  }
+  
+  .payment-details, 
+  .fee-details,
+  .month-details {
+    margin-bottom: 20px;
+  }
+  
+  .payment-details p, 
+  .fee-details p, 
+  .month-details p {
+    margin: 5px 0;
+  }
+  
+  .fee-details input[type="checkbox"] {
+    margin-left: 10px;
+  }
+  
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+  }
+  
+  .signature {
+    margin-top: 20px;
+  }
+  
+  .signature p {
+    margin: 3px 0;
+  }
+  
