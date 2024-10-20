@@ -46,7 +46,7 @@ app.get("/", (req, res) => {
 })
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect('mongodb+srv://vercel-admin-user-671566d006c9dc61232e4eed:YOuLrIjMTAqtb9Xh@cluster0.k9eba.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
