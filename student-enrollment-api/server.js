@@ -53,6 +53,18 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('MongoDB Connected'))
 .catch((err) => console.log(err));
 
+app.get("/test-connection", async (req, res) => {
+    try {
+      await mongoose.connect(process.env.MONGO_URI);
+      res.status(200).send("MongoDB connection is successful.");
+      res.json("MongoDB connection is successful.");
+    } catch (err) {
+      res.status(500).send("MongoDB connection failed.");
+      res.json("MongoDB connection failed.");
+    }
+  });
+  
+
 // Start the server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
