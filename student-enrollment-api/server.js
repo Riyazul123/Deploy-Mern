@@ -11,13 +11,21 @@ dotenv.config();
 
 // Initialize Express
 const app = express();
-app.use(cors(
-    {
-        origin: ["https://student-management-admin.vercel.app"],
-        methods: ["POST", "GET"],
-        credentials: true
-    }
-));
+// app.use(cors(
+//     {
+//         origin: ["https://student-management-admin.vercel.app"],
+//         methods: ["POST", "GET"],
+//         credentials: true
+//     }
+// ));
+
+// CORS configuration
+app.use(cors({
+    origin: "https://student-management-admin.vercel.app", // Frontend URL
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allow all necessary HTTP methods
+    credentials: true, // Allow credentials (cookies, headers, etc.)
+    allowedHeaders: ["Content-Type", "Authorization"], // Ensure proper headers are allowed
+}));
 
 // Middleware
 app.use(bodyParser.json());
