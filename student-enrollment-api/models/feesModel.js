@@ -4,6 +4,7 @@ const feesSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+  
     fees: {
         type: Number,
         required: true,
@@ -36,6 +37,10 @@ const feesSchema = new mongoose.Schema({
     cheque_number: {
         type: String,
         default: null,
+    },
+    fees_for_month:{
+        type: Date,
+        required: true,
     },
 
 }, { timestamps: true });

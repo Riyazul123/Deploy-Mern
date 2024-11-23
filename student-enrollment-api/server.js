@@ -27,6 +27,15 @@ app.use(cors({
     allowedHeaders: ["Content-Type", "Authorization"], // Ensure proper headers are allowed
 }));
 
+//for development
+// app.use(cors({
+//   origin: "http://localhost:3000", // Frontend URL
+//   methods: ["GET", "POST", "PUT", "DELETE"], // Allow all necessary HTTP methods
+//   credentials: true, // Allow credentials (cookies, headers, etc.)
+//   allowedHeaders: ["Content-Type", "Authorization"], // Ensure proper headers are allowed
+// }));
+
+
 // Middleware
 app.use(bodyParser.json());
 

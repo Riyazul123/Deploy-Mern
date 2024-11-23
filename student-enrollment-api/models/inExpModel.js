@@ -30,6 +30,10 @@ const inExpSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    date_of_inexp: { 
+        type: Date,
+        default: null,
+    },
 
 }, { timestamps: true });
 
