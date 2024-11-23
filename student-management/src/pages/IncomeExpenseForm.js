@@ -148,7 +148,8 @@ const IncomeExpenseForm = () => {
         amt_paid: '',
         payment_type: 'cash',
         cheque_number: '',
-        cheque_date: ''
+        cheque_date: '',
+        date_of_inexp:''
     });
 
     const [alertMessage, setAlertMessage] = useState('');
@@ -172,7 +173,9 @@ const IncomeExpenseForm = () => {
 
 
         try {
-            const response = await fetch(baseUrl+'/api/incexpentry', {
+          //  const response = await fetch(baseUrl+'/api/incexpentry', {
+
+             const response = await fetch(baseUrl+'/api/incexpentry', {   
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(submissionData),
@@ -256,6 +259,7 @@ const IncomeExpenseForm = () => {
                                                 required
                                             />
                                         </Grid>
+                                        
                                     </>
                                 )}
 
@@ -296,6 +300,21 @@ const IncomeExpenseForm = () => {
                                         required
                                     />
                                 </Grid>
+                                <Grid item xs={12} md={6}>
+                                            <StyledTextField
+                                                label="Date Of Income/Expense"
+                                                name="date_of_inexp"
+                                                value={formData.date_of_inexp}
+                                                onChange={handleChange}
+                                                type="date"
+                                                InputLabelProps={{shrink: true}}
+                                                fullWidth
+                                                required
+                                            />
+                                        </Grid>
+                               
+
+
 
                                 {/* Payment Type */}
                                 <Grid item xs={12}>

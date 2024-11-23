@@ -85,6 +85,7 @@ import { styled } from '@mui/system';
 import MenuIcon from '@mui/icons-material/Menu'; // Icon for the drawer
 import ExitToAppIcon from '@mui/icons-material/ExitToApp'; // Logout icon
 import profileImage from '../assets/download.png'; // Replace with your actual image path
+import stdnLogo from '../assets/stdt-logo.jpeg';
 import StudentIcon from '../assets/img1.png'; // Replace with actual icon paths
 import FeesIcon from '../assets/img4.png'; // Replace with actual icon paths
 import HomeIcon from '../assets/home.png';
@@ -132,15 +133,19 @@ const NavbarScreen = () => {
                             <MenuIcon />
                         </IconButton>
                     )}
-                    
+                    {/* <LogoSection> */}
+                        <StdnLogo src={stdnLogo} alt="StdnLogo"/>
                     <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Admin Dashboard
+                       
                     </Typography>
+{/* 
+                    </LogoSection> */}
+                    
 
                     <ProfileSection>
                         <ProfileImage src={profileImage} alt="Profile" />
                         <Typography variant="body1" sx={{ ml: 1 }}>
-                            Admin Name
+                           Suranjita Bose
                         </Typography>
                     </ProfileSection>
                 </Toolbar>
@@ -150,8 +155,9 @@ const NavbarScreen = () => {
             <CustomDrawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
                 <DrawerContainer>
                     <List>
+                    <StdnLogo src={stdnLogo} alt="StdnLogo" style={{width:'204px',height:'74px'}}/>
                         <Typography variant="h5" sx={{ flexGrow: 1 }} style={{ paddingBottom: '40px', paddingLeft: '15px' }}>
-                            Admin
+                            
                         </Typography>
 
                         {menuItems.map((item, index) => (
@@ -192,11 +198,22 @@ const ProfileSection = styled(Box)`
     display: flex;
     align-items: center;
 `;
+const LogoSection = styled(Box)`
+    display: flex;
+    align-items: left;
+`;
 
 const ProfileImage = styled('img')`
     width: 40px;
     height: 40px;
     border-radius: 50%;
+`;
+
+const StdnLogo = styled('img')`
+    width: 142px;
+    height: 61px;
+    border-top-left-radius: 19px;
+    border-bottom-right-radius: 19px;
 `;
 
 const CustomDrawer = styled(Drawer)`
