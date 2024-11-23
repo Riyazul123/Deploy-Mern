@@ -489,6 +489,7 @@ const StyledBackground = styled(Box)`
   align-items: flex-start;
   padding-top: 100px;
   z-index: -1;
+  overflow: scroll;
 `;
 
 const StyledOverlay = styled(Box)`
