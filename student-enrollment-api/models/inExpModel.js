@@ -34,6 +34,10 @@ const inExpSchema = new mongoose.Schema({
         type: Date,
         default: null,
     },
+    payment_details:{
+        type: String,
+        default: null,
+    }
 
 }, { timestamps: true });
 

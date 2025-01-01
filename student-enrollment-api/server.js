@@ -54,13 +54,23 @@ app.get("/", (req, res) => {
     res.json("Hello");
 })
 
-// MongoDB connection
+// MongoDB connection for Production
 mongoose.connect('mongodb+srv://vercel-admin-user-671566d006c9dc61232e4eed:YOuLrIjMTAqtb9Xh@cluster0.k9eba.mongodb.net/myFirstDatabase?retryWrites=true&w=majority', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
 .then(() => console.log('MongoDB Connected'))
 .catch((err) => console.log(err));
+
+// MongoDB connection for Locally
+// mongoose.connect('mongodb://localhost:27017/studentdb', {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// })
+// .then(() => console.log('MongoDB Locally Connected'))
+// .catch((err) => console.log(err));
+
+
 
 app.get("/test-connection", async (req, res) => {
     try {

@@ -9,6 +9,7 @@ const feesSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    
     amt_paid: {
         type: Number,
         required: true,

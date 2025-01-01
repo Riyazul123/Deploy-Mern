@@ -5,11 +5,67 @@ const InExp = require('../models/inExpModel');
 // @desc    Enroll a new student
 // @route   POST /api/students
 // @access  Public
+// const enrollStudent = async (req, res) => {
+//     const { student_name, student_dob, fathers_name, mothers_name, contact_no, email_id, alternative_contact_no,
+//         alternative_email_id, fees, date_of_admission, no_of_days } = req.body;
+
+//     try {
+//         const newStudent = new Student({
+//             student_name,
+//             student_dob,
+//             fathers_name,
+//             mothers_name,
+//             contact_no,
+//             email_id,
+//             alternative_contact_no,
+//             alternative_email_id,
+//             fees,
+//             date_of_admission,
+//             no_of_days
+//         });
+
+//         await newStudent.save();
+
+//         res.status(201).json({
+//             message: 'Student enrolled successfully',
+//             student: newStudent,
+//         });
+//     } catch (error) {
+//         res.status(400).json({ error: error.message });
+//     }
+// };
+
+
 const enrollStudent = async (req, res) => {
-    const { student_name, student_dob, fathers_name, mothers_name, contact_no, email_id, alternative_contact_no,
-        alternative_email_id, fees, date_of_admission, no_of_days } = req.body;
+    const {
+        student_name,
+        student_dob,
+        fathers_name,
+        mothers_name,
+        contact_no,
+        email_id,
+        alternative_contact_no,
+        alternative_email_id,
+        fees,
+        date_of_admission,
+        no_of_days,
+        student_type
+    } = req.body;
 
     try {
+        // Check for existing student with the same contact_no or email_id
+        const existingStudent = await Student.findOne({
+            $or: [{ contact_no }, { email_id }],
+        });
+
+        if (existingStudent) {
+            return res.status(400).json({
+                error: `A student with this ${existingStudent.contact_no === contact_no ? 'contact number' : 'email ID'
+                    } already exists.`,
+            });
+        }
+
+        // Create a new student if no duplicates are found
         const newStudent = new Student({
             student_name,
             student_dob,
@@ -21,7 +77,8 @@ const enrollStudent = async (req, res) => {
             alternative_email_id,
             fees,
             date_of_admission,
-            no_of_days
+            no_of_days,
+            student_type
         });
 
         await newStudent.save();
@@ -31,15 +88,33 @@ const enrollStudent = async (req, res) => {
             student: newStudent,
         });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
+
+
 
 // @desc    Get all students
 // @route   GET /api/students
 // @access  Public
+// const getStudents = async (req, res) => {
+//     const { start_date, end_date } = req.query;
+//     try {
+//         const students = await Student.find({
+//             date_of_admission: {
+//                 $gte: new Date(start_date),
+//                 $lte: new Date(end_date),
+//             },
+//         });
+//         res.status(200).send(students);
+//     } catch (error) {
+//         res.status(500).send({ error: error.message });
+//     }
+// };
+
 const getStudents = async (req, res) => {
     const { start_date, end_date } = req.query;
+
     try {
         const students = await Student.find({
             date_of_admission: {
@@ -47,12 +122,19 @@ const getStudents = async (req, res) => {
                 $lte: new Date(end_date),
             },
         });
-        res.status(200).send(students);
+
+        const formattedStudents = students.map(student => ({
+            ...student.toObject(),
+            student_dob: formatDate(student.student_dob),
+            date_of_admission: formatDate(student.date_of_admission)
+        }));
+
+        res.status(200).send(formattedStudents);
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
 };
-const feesStudents= async (req, res) => {
+const feesStudents = async (req, res) => {
     const { search } = req.query;
 
     try {
@@ -70,47 +152,149 @@ const feesStudents= async (req, res) => {
     }
 };
 
+// const createFeeEntry = async (req, res) => {
+//     const {
+//         student_enrollment_id,
+//         fees, // This should match the remaining fees in the Student DB
+//         amt_paid,
+//         late_fine = 0, // Default to 0 if not provided
+//         disc_amt = 0,  // Default to 0 if not provided
+//         payment_details,
+//         payment_type,
+//         cheque_number,
+//         fees_for_month,
+//     } = req.body;
+
+//     try {
+//         // Fetch the student record using the enrollment ID
+//         const student = await Student.findOne({ enrollment_id: student_enrollment_id });
+
+//         if (!student) {
+//             return res.status(404).json({ message: 'Student not found' });
+//         }
+
+//         // Calculate the remaining fees after payment
+//         const total_paid_amt = amt_paid + late_fine - disc_amt;
+//         const remaining_fees = student.fees - total_paid_amt;
+
+//         if (remaining_fees < 0) {
+//             return res.status(400).json({
+//                 message: 'Amount paid exceeds the remaining fees',
+//             });
+//         }
+
+//         // Update the student's remaining fees
+//         student.fees = remaining_fees;
+//         await student.save();
+
+//         // Create a new fee entry with the calculated total amount paid
+//         const feeEntry = new Fees({
+//             student_enrollment_id,
+//             fees: student.fees, // Remaining fees
+//             amt_paid,
+//             late_fine,
+//             disc_amt,
+//             total_paid_amt,
+//             payment_details,
+//             payment_type,
+//             cheque_number,
+//             fees_for_month,
+//         });
+
+//         await feeEntry.save();
+
+//         res.status(201).json({
+//             message: 'Fee entry created successfully',
+//             feeEntry,
+//             remaining_fees: student.fees,
+//         });
+//     } catch (error) {
+//         res.status(400).json({ message: 'Error creating fee entry', error: error.message });
+//     }
+// };
+
 const createFeeEntry = async (req, res) => {
-    const { student_enrollment_id, fees, amt_paid, late_fine, disc_amt, payment_details, payment_type, cheque_number ,fees_for_month} = req.body;
+    const {
+        student_enrollment_id,
+        fees, // This should match the remaining fees in the Student DB
+        amt_paid,
+        late_fine = 0, // Default to 0 if not provided
+        disc_amt = 0,  // Default to 0 if not provided
+        payment_details,
+        payment_type,
+        cheque_number,
+        fees_for_month, // This should include the month and year (e.g., "2024-12")
+    } = req.body;
 
     try {
-        // const feeEntry = new Fees({
-        //     student_enrollment_id,
-        //     fees,
-        //     amt_paid,
-        //     late_fine,
-        //     disc_amt,
-        //     payment_details,
-        //     payment_type,
-        //     cheque_number,
-        // });
+        // Fetch the student record using the enrollment ID
+        const student = await Student.findOne({ enrollment_id: student_enrollment_id });
 
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        const currentMonth = new Date(fees_for_month).getMonth();
+        const currentYear = new Date(fees_for_month).getFullYear();
+
+        // Check if the student is "regular" and has already paid for this month
+        if (student.student_type === 'regular') {
+            const existingFeeEntry = await Fees.findOne({
+                student_enrollment_id,
+                fees_for_month: { $gte: new Date(`${currentYear}-${currentMonth + 1}-01`), $lt: new Date(`${currentYear}-${currentMonth + 2}-01`) },
+            });
+
+            if (existingFeeEntry) {
+                return res.status(400).json({
+                    message: 'Regular students can only make one fee payment per month',
+                });
+            }
+        }
+
+        // Calculate the total paid amount
         const total_paid_amt = amt_paid + late_fine - disc_amt;
 
-        // Create a new fee entry with the calculated total_amt_paid
+        // Ensure the payment does not exceed the remaining fees
+        const remaining_fees = student.fees - total_paid_amt;
+
+        if (remaining_fees < 0) {
+            return res.status(400).json({
+                message: 'Amount paid exceeds the remaining fees',
+            });
+        }
+
+        // Update the student's remaining fees
+        // student.fees = remaining_fees;
+        // await student.save();
+
+        // Create a new fee entry
         const feeEntry = new Fees({
             student_enrollment_id,
-            fees,
+            fees: remaining_fees, // Remaining fees after this payment
             amt_paid,
             late_fine,
             disc_amt,
-            total_paid_amt, // Add total amount paid to the entry
+            total_paid_amt,
             payment_details,
             payment_type,
             cheque_number,
-            fees_for_month
+            fees_for_month,
         });
 
         await feeEntry.save();
-        res.status(201).json({ message: 'Fee entry created successfully', feeEntry });
+
+        res.status(201).json({
+            message: 'Fee entry created successfully',
+            feeEntry,
+            remaining_fees: student.fees,
+        });
     } catch (error) {
-        res.status(400).json({ message: 'Error creating fee entry', error });
+        res.status(400).json({ message: 'Error creating fee entry', error: error.message });
     }
 };
 
-
 const incExpEntry = async (req, res) => {
-    const { inExp_type, inExp_details, rec_send_name, amt_paid, payment_type, cheque_number, cheque_date, date_of_inexp } = req.body;
+    const { inExp_type, inExp_details, rec_send_name, amt_paid, payment_type, cheque_number, cheque_date, date_of_inexp, payment_details  } = req.body;
 
     try {
         const newEntry = new InExp({
@@ -121,7 +305,8 @@ const incExpEntry = async (req, res) => {
             payment_type,
             cheque_number,
             cheque_date, // Make sure to include cheque_date in the entry
-            date_of_inexp
+            date_of_inexp,
+            payment_details
         });
 
         await newEntry.save();
@@ -131,58 +316,81 @@ const incExpEntry = async (req, res) => {
     }
 };
 
- const getPaymentSlip = async (req, res) => {
-    const { enrollment_id, student_name } = req.query;
-  
+const getPaymentSlip = async (req, res) => {
+    const { search } = req.query;
+
     try {
-      let student;
-      if (enrollment_id) {
-        // Fetch by enrollment ID
-        student = await Student.findOne({ enrollment_id });
-      } else if (student_name) {
-        // Fetch by student name
-        student = await Student.findOne({ student_name: new RegExp(student_name, 'i') });
-      }
-  
-      if (!student) {
-        return res.status(404).json({ message: 'Student not found' });
-      }
-  
-      // Fetch fees based on the student's enrollment ID
-      const fees = await Fees.findOne({ student_enrollment_id: student.enrollment_id });
-  
-      if (!fees) {
-        return res.status(404).json({ message: 'Fees details not found for this student' });
-      }
-  
-      // Return the combined student and fees data
-      res.status(200).json({
-        student: {
-          student_name: student.student_name,
-          fathers_name: student.fathers_name,
-          mothers_name: student.mothers_name,
-          contact_no: student.contact_no,
-          email_id: student.email_id,
-          fees: student.fees,
-          enrollment_id: student.enrollment_id,
-          date_of_admission: student.date_of_admission,
-        },
-        fees: {
-          fees: fees.fees,
-          amt_paid: fees.amt_paid,
-          late_fine: fees.late_fine,
-          disc_amt: fees.disc_amt,
-          payment_details: fees.payment_details,
-          payment_type: fees.payment_type,
-          cheque_number: fees.cheque_number,
-        },
-      });
+        // Find students by either enrollment ID or student name (case insensitive)
+        const students = await Student.find({
+            $or: [
+                { enrollment_id: { $regex: search, $options: 'i' } },
+                { student_name: { $regex: search, $options: 'i' } } // Case insensitive search
+            ]
+        });
+
+        if (!students || students.length === 0) {
+            return res.status(404).json({ message: 'No students found' });
+        }
+
+        // Fetch fees for each student based on their enrollment ID
+        const studentFees = await Promise.all(
+            students.map(async (student) => {
+                const enrollmentId = String(student.enrollment_id).trim(); // Ensure it's a string and remove any leading/trailing spaces
+                console.log(`Looking for fees with enrollment_id: ${enrollmentId}`); // Log for debugging
+
+                // Ensure both student_enrollment_id and enrollment_id are treated as strings
+                const fees = await Fees.findOne({ student_enrollment_id: enrollmentId });
+
+                // Log fees for debugging
+                console.log('Found fees:', fees);
+
+                // Only return data if fees are found
+                if (!fees) {
+                    console.log(`Fees not found for student with enrollment_id: ${student.enrollment_id}`); // Log the missing fees
+                    return null; // Return null if no fees found
+                }
+
+                return {
+                    student_id: student._id,
+                    fees: {
+                        fees: fees.fees,
+                        amt_paid: fees.amt_paid,
+                        late_fine: fees.late_fine,
+                        disc_amt: fees.disc_amt,
+                        payment_details: fees.payment_details,
+                        payment_type: fees.payment_type,
+                        cheque_number: fees.cheque_number,
+                    },
+                    student: {
+                        student_name: student.student_name,
+                        fathers_name: student.fathers_name,
+                        mothers_name: student.mothers_name,
+                        contact_no: student.contact_no,
+                        email_id: student.email_id,
+                        enrollment_id: student.enrollment_id,
+                        date_of_admission: student.date_of_admission,
+                    }
+                };
+            })
+        );
+
+        // Filter out students with no fees data (null)
+        const validStudentFees = studentFees.filter(item => item !== null);
+
+        if (validStudentFees.length === 0) {
+            return res.status(404).json({ message: 'No matching students with fees found' });
+        }
+
+        // Return the combined student and fees data
+        res.status(200).json(validStudentFees);
     } catch (error) {
-      res.status(500).json({ message: 'Server error', error });
+        console.error('Error fetching payment slip:', error); // Log error details for debugging
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
-  };
-  
-  const calculateMonthlyIncomeExpense = async (req, res) => {
+};
+
+
+const calculateMonthlyIncomeExpense = async (req, res) => {
     const { fromDate, toDate } = req.body;
 
     try {
@@ -219,12 +427,14 @@ const incExpEntry = async (req, res) => {
                 incomeHead: entry.inExp_details || "N/A",
                 receivedFrom: entry.rec_send_name || "N/A",
                 amount: entry.amt_paid.toFixed(2),
+                paymentDetails:entry.payment_details || "00"
             })),
             ...feesIncomeData.map((fees) => ({
                 date: fees.fees_for_month.toLocaleDateString(),
                 incomeHead: "Tuition Fees",
                 receivedFrom: fees.student_enrollment_id,
                 amount: fees.total_paid_amt.toFixed(2),
+                paymentDetails:fees.payment_details
             })),
         ];
 
@@ -234,6 +444,7 @@ const incExpEntry = async (req, res) => {
             expensesHead: entry.inExp_details || "N/A",
             paymentTo: entry.rec_send_name || "N/A",
             amount: entry.amt_paid.toFixed(2),
+             paymentDetails:entry.payment_details || "00"
         }));
 
         // Calculate totals
@@ -252,68 +463,15 @@ const incExpEntry = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+// Helper function to format the date as DDMMYYYY
+const formatDate = (date) => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+};
 
 
-
-//   const calculateMonthlyIncomeExpense = async (req, res) => {
-//     const { fromDate, toDate } = req.body;
-
-//     try {
-//         // Validate the date inputs
-//         if (!fromDate || !toDate) {
-//             return res.status(400).json({ message: "Please provide both 'fromDate' and 'toDate'." });
-//         }
-
-//         // Convert the input dates into valid Date objects
-//         const startDate = new Date(fromDate);
-//         const endDate = new Date(toDate);
-//         endDate.setHours(23, 59, 59, 999);  // To include the entire 'toDate' day
-
-//         // Fetch income from 'InExp' where 'inExp_type' is income
-//         const incomeData = await InExp.find({
-//             inExp_type: 'income',
-//             createdAt: { $gte: startDate, $lte: endDate }
-//         });
-
-//         // Fetch expense from 'InExp' where 'inExp_type' is expense
-//         const expenseData = await InExp.find({
-//             inExp_type: 'expense',
-//             createdAt: { $gte: startDate, $lte: endDate }
-//         });
-
-//         // Fetch additional income from the 'Fees' collection (fees paid)
-//         const feesIncomeData = await Fees.find({
-//             createdAt: { $gte: startDate, $lte: endDate }
-//         });
-
-//         // Calculate the total income and expense
-//         let totalIncome = 0;
-//         let totalExpense = 0;
-
-//         // Sum up income from 'InExp'
-//         incomeData.forEach(entry => {
-//             totalIncome += entry.amt_paid;
-//         });
-
-//         // Sum up fees paid as income
-//         feesIncomeData.forEach(fees => {
-//             totalIncome += fees.total_paid_amt;
-//         });
-
-//         // Sum up expense from 'InExp'
-//         expenseData.forEach(entry => {
-//             totalExpense += entry.amt_paid;
-//         });
-
-//         // Return the result
-//         return res.status(200).json({
-//             income: totalIncome,
-//             expense: totalExpense,
-//         });
-//     } catch (error) {
-//         console.error("Error calculating monthly income and expense:", error);
-//         return res.status(500).json({ message: "Internal server error" });
-//     }
-// };
 
 module.exports = { enrollStudent, getStudents, feesStudents, createFeeEntry, incExpEntry, getPaymentSlip, calculateMonthlyIncomeExpense };
