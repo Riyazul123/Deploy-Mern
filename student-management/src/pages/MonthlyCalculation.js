@@ -362,6 +362,7 @@ const MonthlyCalculationForm = () => {
                           <StyledTableCell>Date</StyledTableCell>
                           <StyledTableCell>Income Head</StyledTableCell>
                           <StyledTableCell>Received From</StyledTableCell>
+                          <StyledTableCell>Transaction Details</StyledTableCell>
                           <StyledTableCell>Amount</StyledTableCell>
 
                           <StyledTableCell></StyledTableCell>
@@ -369,6 +370,7 @@ const MonthlyCalculationForm = () => {
                           <StyledTableCell>Date</StyledTableCell>
                           <StyledTableCell>Expenses Head</StyledTableCell>
                           <StyledTableCell>Payment To</StyledTableCell>
+                          <StyledTableCell>Transaction Details</StyledTableCell>
                           <StyledTableCell>Amount</StyledTableCell>
                         </TableRow>
                       </TableHead>
@@ -378,11 +380,12 @@ const MonthlyCalculationForm = () => {
                             <TableCell>{row.date}</TableCell>
                             <TableCell>{row.incomeHead}</TableCell>
                             <TableCell>{row.receivedFrom}</TableCell>
+                            <TableCell>{row.paymentDetails}</TableCell>
                             <TableCell>{row.amount}</TableCell>
                             <TableCell />
                             <TableCell />
                             <TableCell />
-                            <TableCell />
+                            <TableCell /> 
                             <TableCell />
                           </TableRow>
                         ))}
@@ -392,12 +395,12 @@ const MonthlyCalculationForm = () => {
                             <TableCell />
                             <TableCell />
                             <TableCell />
-
                             <TableCell />
-
+                            <TableCell />
                             <TableCell>{row.date}</TableCell>
                             <TableCell>{row.expensesHead}</TableCell>
                             <TableCell>{row.paymentTo}</TableCell>
+                            <TableCell>{row.paymentDetails}</TableCell>
                             <TableCell>{row.amount}</TableCell>
                           </TableRow>
                         ))}

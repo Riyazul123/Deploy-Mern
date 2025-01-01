@@ -21,6 +21,8 @@ import {
 import { styled } from '@mui/system';
 import NavbarScreen from './Navbar';
 import BackgroundImage from '../assets/backg.jpg';
+import { toast, ToastContainer } from 'react-toastify';
+
 
 const FeesCalculator = () => {
     const [studentIdOrName, setStudentIdOrName] = useState('');
@@ -148,7 +150,8 @@ const FeesCalculator = () => {
                 const result = await response.json();
                 if (response.ok) {
                     setPaymentStatus('Payment successful');
-                    setDialogOpen(false);
+                    toast.success('Payment successful!');
+                    
                     // Reset fields
                     setAmountPaid('');
                     setFeesForMonth('');
@@ -156,12 +159,18 @@ const FeesCalculator = () => {
                     setDiscount('');
                     setDetails('');
                     setChequeNumber('');
+                    setTimeout(() => {
+                        setDialogOpen(false); // Close the dialog after 2 seconds
+                    }, 2000); // 2 seconds delay
                 } else {
                     setPaymentStatus(result.message || 'Error processing payment');
+                    toast.error(result.message || 'Error processing payment.');
                 }
             } catch (error) {
                 console.error('Error:', error); // Log the error to console for debugging
                 setPaymentStatus('Error connecting to server');
+                toast.error('Error connecting to server. Please try again.');
+
             }
         } else {
             setPaymentStatus('Student data is missing');
@@ -268,13 +277,15 @@ const FeesCalculator = () => {
                             <Box sx={{ padding: 2 }}>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Student ID: {studentData.enrollment_id}</Typography>
                                 <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Name: {studentData.student_name}</Typography>
-                                <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>Fees: ₹{studentData.fees}</Typography>
+                              {/* {  (studentData.student_type === "regular")&&<Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>Fees: ₹{studentData.fees}</Typography>} */}
+                              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#4caf50' }}>Fees: ₹{studentData.fees}</Typography>
 
                                 <Box sx={{ marginTop: 2 }}>
                                     <TextField
                                         label="Amount Paid"
                                         fullWidth
                                         margin="normal"
+                                        type='number'
                                         value={amountPaid}
                                         onChange={(e) => setAmountPaid(e.target.value)}
                                         variant="outlined"
@@ -284,6 +295,7 @@ const FeesCalculator = () => {
                                         label="Late Fine"
                                         fullWidth
                                         margin="normal"
+                                        type='number'
                                         value={lateFine}
                                         onChange={(e) => setLateFine(e.target.value)}
                                         variant="outlined"
@@ -293,6 +305,7 @@ const FeesCalculator = () => {
                                         label="Discount Amount"
                                         fullWidth
                                         margin="normal"
+                                        type='number'
                                         value={discount}
                                         onChange={(e) => setDiscount(e.target.value)}
                                         variant="outlined"

@@ -149,7 +149,8 @@ const IncomeExpenseForm = () => {
         payment_type: 'cash',
         cheque_number: '',
         cheque_date: '',
-        date_of_inexp:''
+        date_of_inexp:'',
+        payment_details :''
     });
 
     const [alertMessage, setAlertMessage] = useState('');
@@ -157,7 +158,9 @@ const IncomeExpenseForm = () => {
 
     const [paymentType, setPaymentType] = useState('cash');
     const [chequeNumber, setChequeNumber] = useState('');
-    const [chequeDate, setChequeDate] = useState(''); // Add this for the cheque date
+    const [chequeDate, setChequeDate] = useState('');
+    const [paymentDetails, setPaymentDetails] = useState('');
+    
     const baseUrl = process.env.REACT_APP_SERVER_URL;
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -169,6 +172,7 @@ const IncomeExpenseForm = () => {
             ...formData,
             cheque_number: paymentType === 'cheque' ? chequeNumber : null,
             cheque_date: paymentType === 'cheque' ? chequeDate : null, // Include cheque date if paymentType is 'cheque'
+            payment_details :paymentType=='cash' ? 'NA' : paymentDetails
         };
 
 
@@ -203,7 +207,8 @@ const IncomeExpenseForm = () => {
             amt_paid: '',
             payment_type: 'cash',
             cheque_number: '',
-            cheque_date :''
+            cheque_date :'',
+            payment_details:''
         });
     };
 
@@ -328,6 +333,23 @@ const IncomeExpenseForm = () => {
                                         <FormControlLabel value="cheque" control={<Radio />} label="Cheque" />
                                     </RadioGroup>
                                 </Grid>
+                                {(paymentType === 'online' || paymentType === 'cheque') && (
+                                    <>
+                                        <Grid item xs={12}>
+                                            <StyledTextField
+                                                label="Transaction Details"
+                                                name="payment_details"
+                                                value={paymentDetails}
+                                                onChange={(e) => setPaymentDetails(e.target.value)}
+                                                fullWidth
+                                                required
+                                            />
+                                        </Grid>
+
+                                     
+                                    </>
+                                )}
+
 
                                 {paymentType === 'cheque' && (
                                     <>

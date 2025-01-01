@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { styled } from '@mui/system';
 import { TextField, Button, Box, Paper, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { FormControl, FormLabel, RadioGroup, FormControlLabel, Radio } from '@mui/material';
+
 import NavbarScreen from './Navbar';
 import BackgroundImage from '../assets/backg.jpg';
 
 const StudentEnrollment = () => {
     const [formData, setFormData] = useState({
         student_name: '',
-        student_dob:'',
+        student_dob: '',
         fathers_name: '',
         mothers_name: '',
         contact_no: '',
@@ -16,7 +18,8 @@ const StudentEnrollment = () => {
         alternative_email_id: '',
         fees: '',
         date_of_admission: '',
-        no_of_days: ''
+        no_of_days: '',
+        student_type: ''
     });
 
     const [filterDates, setFilterDates] = useState({
@@ -39,8 +42,8 @@ const StudentEnrollment = () => {
 
         try {
             const baseUrl = process.env.REACT_APP_SERVER_URL;
-            const response = await fetch(baseUrl+'/api/enroll', {
-            // const response = await fetch(baseUrl + '/api/enroll', {
+            const response = await fetch(baseUrl + '/api/enroll', {
+                // const response = await fetch(baseUrl + '/api/enroll', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -52,7 +55,7 @@ const StudentEnrollment = () => {
                 alert('Student enrolled successfully');
                 setFormData({
                     student_name: '',
-                    student_dob:'',
+                    student_dob: '',
                     fathers_name: '',
                     mothers_name: '',
                     contact_no: '',
@@ -61,7 +64,8 @@ const StudentEnrollment = () => {
                     alternative_email_id: '',
                     fees: '',
                     date_of_admission: '',
-                    no_of_days: ''
+                    no_of_days: '',
+                    student_type: ''
                 });
             } else {
                 const errorData = await response.json();
@@ -97,20 +101,50 @@ const StudentEnrollment = () => {
                 <Paper elevation={3} sx={{ padding: 4, borderRadius: '8px' }}>
                     <Box component="form" onSubmit={handleSubmit}>
                         <Grid container spacing={2}>
-                            {Object.keys(formData).map((field, idx) => (
+                        <Grid item xs={12}>
+                                <FormControl component="fieldset" fullWidth>
+                                    <FormLabel component="legend" sx={{ fontWeight: 'bold', marginBottom: 1 }}>
+                                        Student Type
+                                    </FormLabel>
+                                    <RadioGroup
+                                        row
+                                        name="student_type"
+                                        value={formData.student_type || ''}
+                                        onChange={handleChange}
+                                    >
+                                        <FormControlLabel
+                                            value="regular"
+                                            control={<Radio />}
+                                            label="Regular"
+                                        />
+                                        <FormControlLabel
+                                            value="casual"
+                                            control={<Radio />}
+                                            label="Casual"
+                                        />
+                                    </RadioGroup>
+                                </FormControl>
+                            </Grid>
+
+                            {Object.keys(formData)
+                            .filter((field) => field !== 'student_type')
+                            .map((field, idx) => (
                                 <Grid item xs={12} sm={6} key={idx}>
                                     <StyledTextField
                                         label={field.split('_').join(' ').toUpperCase()}
                                         name={field}
-                                        type={field === 'date_of_admission' ||field === 'student_dob' ? 'date' : 'text'}
+                                        type={field === 'date_of_admission' || field === 'student_dob' ? 'date' : field === 'contact_no' ? 'number' : field === 'fees' ? 'number' : field === 'alternative_contact_no' ? 'number' : field === 'no_of_days' ? 'number' : 'text'}
                                         value={formData[field]}
                                         onChange={handleChange}
                                         fullWidth
-                                        required={!(field === 'alternative_contact_no' || field === 'alternative_email_id')} 
+                                        required={!(field === 'alternative_contact_no' || field === 'alternative_email_id')}
                                         InputLabelProps={field === 'date_of_admission' || field === 'student_dob' ? { shrink: true } : {}}
                                     />
                                 </Grid>
                             ))}
+
+                            
+
 
 
                         </Grid>
@@ -187,6 +221,7 @@ const StudentEnrollment = () => {
                                     <TableCell style={{ color: '#fff' }}>Fees</TableCell>
                                     <TableCell style={{ color: '#fff' }}>Date of Admission</TableCell>
                                     <TableCell style={{ color: '#fff' }}>No. of Days</TableCell>
+                                    <TableCell style={{ color: '#fff' }}>Student Type</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -203,8 +238,9 @@ const StudentEnrollment = () => {
                                             <TableCell>{student.alternative_email_id}</TableCell>
                                             <TableCell>{student.alternative_contact_no}</TableCell>
                                             <TableCell>{student.fees}</TableCell>
-                                            <TableCell>{new Date(student.date_of_admission).toLocaleDateString()}</TableCell>
+                                            <TableCell>{student.date_of_admission}</TableCell>
                                             <TableCell>{student.no_of_days}</TableCell>
+                                            <TableCell>{student.student_type}</TableCell>
                                         </TableRow>
                                     ))
                                 ) : (
