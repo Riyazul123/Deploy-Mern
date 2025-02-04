@@ -63,10 +63,17 @@ const PaymentSlip = () => {
       // Check if the response is an array
       if (Array.isArray(response.data) && response.data.length > 0) {
         // Map through the response to extract the student and fees data
-        const studentData = response.data.map(item => ({
-          ...item.student, // Extract student data
-          fees: item.fees   // Include fees data for each student
-        }));
+        // const studentData = response.data.map(item => ({
+        //   ...item.student, // Extract student data
+        //   fees: item.fees   // Include fees data for each student
+        // }));
+        const studentData = response.data.flatMap(item =>
+          item.fees.map(fee => ({
+            ...item.student,  // Extract student details
+            fees: fee,       // Map each fee record separately
+          }))
+        );
+
 
         // Set the student data with fees combined
         setStudents(studentData);
@@ -80,7 +87,7 @@ const PaymentSlip = () => {
     } finally {
       setLoading(false); // Stop the loader
     }
-};
+  };
 
 
   const generatePDF = async (student) => {
@@ -96,42 +103,29 @@ const PaymentSlip = () => {
       month: "long",
       year: "numeric",
     });
-    
-    
+
+
     doc.addImage(logoSrc, "JPEG", 440, 20, 120, 60);
 
-    // doc.setFont("times", "bold");
-    // doc.setFontSize(14);
-    // doc.text("STEPS TOGETHER – Intervention Centre",60 , 30);
 
-    // doc.setFont("times", "bold");
-    // doc.setFontSize(14);
-    // doc.text("“Where Every Ability Shines”",60 , 50);
-   
 
-      // Add title
-      const title = "STEPS TOGETHER – Intervention Centre";
-      const subtitle = "“Where Every Ability Shines”";
-      const ackn = "Acknowledgement of Payment";
-      doc.setFont("times", "bold");
-      doc.setFontSize(14);
-  
-      // Calculate center position for title
-      const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
-      doc.text(title, titleX, 40);
-  
-      doc.setFontSize(12);
-      const subtitleX = (pageWidth - doc.getTextWidth(subtitle)) / 2;
-      doc.text(subtitle, subtitleX, 60);
 
-    // PDF generation logic using student and fees info
-    // doc.setFont("times", "bold");
-    // doc.setFontSize(18);
-    // doc.text("STEPS TOGETHER – Intervention Centre", 40, 50);
+    // Add title
+    const title = "STEPS TOGETHER – Intervention Centre";
+    const subtitle = "“Where Every Ability Shines”";
+    const ackn = "Acknowledgement of Payment";
+    doc.setFont("times", "bold");
+    doc.setFontSize(14);
 
-    // doc.setFont("times", "italic");
-    // doc.setFontSize(12);
-    // doc.text('"Where Every Ability Shines"', 40, 70);
+    // Calculate center position for title
+    const titleX = (pageWidth - doc.getTextWidth(title)) / 2;
+    doc.text(title, titleX, 40);
+
+    doc.setFontSize(12);
+    const subtitleX = (pageWidth - doc.getTextWidth(subtitle)) / 2;
+    doc.text(subtitle, subtitleX, 60);
+
+
 
     doc.setLineWidth(1);
     doc.line(40, 80, 555, 80);
@@ -141,11 +135,9 @@ const PaymentSlip = () => {
     doc.setFont("times", "bold");
     doc.setFontSize(14);
     const acknX = (pageWidth - doc.getTextWidth(ackn)) / 2;
-    doc.text(ackn,acknX, 110);
+    doc.text(ackn, acknX, 110);
 
-    // doc.setFontSize(12);
-    // doc.setFont("times", "normal");
-    // doc.text(`Date: ${new Date().toLocaleDateString()}`, 400, 110);
+
     doc.setFontSize(12);
     doc.setFont("times", "normal");
     doc.text(`Date: ${formattedDate}`, 40, 125);
@@ -167,7 +159,7 @@ const PaymentSlip = () => {
     doc.setFont("times", "bold");
     doc.text("Tuition Fees:", 40, 230);
     doc.setFont("times", "normal");
-    doc.text(`Rs. ${parseFloat(fees.amt_paid+fees.fees).toFixed(2)}`, 150, 230);
+    doc.text(`Rs. ${parseFloat(fees.amt_paid + fees.fees).toFixed(2)}`, 150, 230);
 
     doc.setFont("times", "bold");
     doc.text("Late Payment:", 40, 260);
@@ -203,31 +195,6 @@ const PaymentSlip = () => {
     }
     doc.text("Cash", 360, 320);
 
- //   doc.text("Payment Method:", 40, 320);
-
-// Online Payment Method
-// doc.rect(160, 310, 12, 12); // Draws an empty box
-// if (fees.payment_type.toLowerCase() === "online") {
-//   doc.setFont("times", "bold");
-//   doc.text("✓", 164, 320); // Adds a checkmark
-// }
-// doc.text("Online", 180, 320);
-
-// // Cheque Payment Method
-// doc.rect(250, 310, 12, 12); // Draws an empty box
-// if (fees.payment_type.toLowerCase() === "cheque") {
-//   doc.setFont("times", "bold");
-//   doc.text("✓", 254, 320); // Adds a checkmark
-// }
-// doc.text("Cheque", 270, 320);
-
-// // Cash Payment Method
-// doc.rect(340, 310, 12, 12); // Draws an empty box
-// if (fees.payment_type.toLowerCase() === "cash") {
-//   doc.setFont("times", "bold");
-//   doc.text("✓", 344, 320); // Adds a checkmark
-// }
-// doc.text("Cash", 360, 320);
 
 
     doc.setFont("times", "bold");
@@ -240,29 +207,6 @@ const PaymentSlip = () => {
     doc.setFont("times", "normal");
     doc.text(new Date().toLocaleDateString(), 150, 380);
 
-    // doc.setFont("times", "bold");
-    // doc.text("Thank you for your payment.", 40, 420);
-    // // doc.setFont("times", "normal");
-    // // doc.text(new Date().toLocaleDateString(), 150, 380);
-
-
-    //     doc.setLineWidth(0.5);
-    //     doc.line(40, 500, 555, 500);
-
-    //     doc.setFont("times", "bold");
-    //     doc.text("For STEPS TOGETHER", 40, 450);
-    //     doc.text("Suranjita Bose", 40, 465);
-    //     doc.text("Special Educator & Founder", 40, 480);
-    //     doc.text("CRR No: A82386", 40, 495);
-
-    //       // Disclaimer
-    //   doc.setFont("times", "italic");
-    //   doc.setFontSize(10);
-    //   doc.text(
-    //     "BE – 47, 114 Shanti Pally, Kasba, Kolkata 700107 | Contact: +91-9836418180",
-    //     40,
-    //     510
-    //   );
 
 
     doc.setFont("times", "bold");
@@ -300,32 +244,32 @@ const PaymentSlip = () => {
     //     650
     // );
     // Footer Section
-doc.setFont("times", "bold");
-doc.text("For STEPS TOGETHER", 40, 550);
+    doc.setFont("times", "bold");
+    doc.text("For STEPS TOGETHER", 40, 550);
 
-// Adding Signature
-doc.addImage(sign, "PNG", 40, 560, 100, 40); // Adjusts position and size for the signature image
+    // Adding Signature
+    doc.addImage(sign, "PNG", 40, 560, 100, 40); // Adjusts position and size for the signature image
 
-doc.setFont("times", "normal");
-doc.text("Suranjita Bose", 40, 615);
-doc.text("Special Educator & Founder", 40, 630);
-doc.text("CRR No: A82386", 40, 645);
+    doc.setFont("times", "normal");
+    doc.text("Suranjita Bose", 40, 615);
+    doc.text("Special Educator & Founder", 40, 630);
+    doc.text("CRR No: A82386", 40, 645);
 
-const disclaimerText = "BE – 47, 114 Shanti Pally, Kasba, Kolkata 700107     |    Contact: +91-9836418180";
-const textWidth = doc.getTextWidth(disclaimerText); // Get the width of the disclaimer text
-const xPosition = (pageWidth - textWidth) / 2; 
-// Disclaimer
-// doc.setFontSize(10);
-// doc.setFont("times", "normal");
-// doc.text(
-//     "BE – 47, 114 Shanti Pally, Kasba, Kolkata 700107 | Contact: +91-9836418180",
-//     40,
-//     690
-// );
+    const disclaimerText = "BE – 47, 114 Shanti Pally, Kasba, Kolkata 700107     |    Contact: +91-9836418180";
+    const textWidth = doc.getTextWidth(disclaimerText); // Get the width of the disclaimer text
+    const xPosition = (pageWidth - textWidth) / 2;
+    // Disclaimer
+    // doc.setFontSize(10);
+    // doc.setFont("times", "normal");
+    // doc.text(
+    //     "BE – 47, 114 Shanti Pally, Kasba, Kolkata 700107 | Contact: +91-9836418180",
+    //     40,
+    //     690
+    // );
 
-doc.setFont("times", "normal");
-doc.setFontSize(10);
-doc.text(disclaimerText, xPosition, 750); // Centered text
+    doc.setFont("times", "normal");
+    doc.setFontSize(10);
+    doc.text(disclaimerText, xPosition, 750); // Centered text
 
     doc.save(`Payment_Slip_${student.student_name}.pdf`);
   };
@@ -361,26 +305,31 @@ doc.text(disclaimerText, xPosition, 750); // Centered text
             <Table>
               <TableHead>
                 <TableRow>
-                <TableCell>Enrollment ID</TableCell>
+                  <TableCell>Enrollment ID</TableCell>
                   <TableCell>Student Name</TableCell>
                   <TableCell>Father's Name</TableCell>
                   <TableCell>Tuition Fees</TableCell>
                   <TableCell>Amount Paid</TableCell>
                   <TableCell>Remaining Amount</TableCell>
-                  
+                  <TableCell>Fees Date</TableCell>
+                  <TableCell>Fees Month</TableCell>
+                 
                   <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {students.map((student, index) => (
                   <TableRow key={index}>
-                     <TableCell>{student.enrollment_id}</TableCell>
+                    <TableCell>{student.enrollment_id}</TableCell>
                     <TableCell>{student.student_name}</TableCell>
                     <TableCell>{student.fathers_name}</TableCell>
-                    <TableCell>{student.fees.amt_paid+student.fees.fees}</TableCell>
+                    <TableCell>{student.fees.amt_paid + student.fees.fees}</TableCell>
+                    <TableCell>{new Date(student.fees.fees_for_month).toLocaleDateString()}</TableCell>
+                    <TableCell>{new Date(student.fees.fees_for_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</TableCell>
 
                     <TableCell>{student.fees.amt_paid}</TableCell>
                     <TableCell>{student.fees.fees}</TableCell>
+
                     <TableCell>
                       <StyledButton
                         variant="contained"
@@ -412,7 +361,7 @@ const StyledBackground = styled(Box)`
     filter: blur(8px);
 `;
 const StyledContainer = styled(Box)`
-    max-width: 800px;
+    max-width: 1000px;
     margin: 80px auto;
     padding: 20px;
     background-color: rgba(255, 255, 255, 0.8);

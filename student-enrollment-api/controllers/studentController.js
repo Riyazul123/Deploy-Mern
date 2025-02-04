@@ -316,6 +316,81 @@ const incExpEntry = async (req, res) => {
     }
 };
 
+// const getPaymentSlip = async (req, res) => {
+//     const { search } = req.query;
+
+//     try {
+//         // Find students by either enrollment ID or student name (case insensitive)
+//         const students = await Student.find({
+//             $or: [
+//                 { enrollment_id: { $regex: search, $options: 'i' } },
+//                 { student_name: { $regex: search, $options: 'i' } } // Case insensitive search
+//             ]
+//         });
+
+//         if (!students || students.length === 0) {
+//             return res.status(404).json({ message: 'No students found' });
+//         }
+
+//         // Fetch fees for each student based on their enrollment ID
+//         const studentFees = await Promise.all(
+//             students.map(async (student) => {
+//                 const enrollmentId = String(student.enrollment_id).trim(); // Ensure it's a string and remove any leading/trailing spaces
+//                 console.log(`Looking for fees with enrollment_id: ${enrollmentId}`); // Log for debugging
+
+//                 // Ensure both student_enrollment_id and enrollment_id are treated as strings
+//                 const fees = await Fees.findOne({ student_enrollment_id: enrollmentId });
+
+//                 // Log fees for debugging
+//                 console.log('Found fees:', fees);
+
+//                 // Only return data if fees are found
+//                 if (!fees) {
+//                     console.log(`Fees not found for student with enrollment_id: ${student.enrollment_id}`); // Log the missing fees
+//                     return null; // Return null if no fees found
+//                 }
+
+//                 return {
+//                     student_id: student._id,
+//                     fees: {
+//                         fees: fees.fees,
+//                         amt_paid: fees.amt_paid,
+//                         late_fine: fees.late_fine,
+//                         disc_amt: fees.disc_amt,
+//                         payment_details: fees.payment_details,
+//                         payment_type: fees.payment_type,
+//                         cheque_number: fees.cheque_number,
+//                     },
+//                     student: {
+//                         student_name: student.student_name,
+//                         fathers_name: student.fathers_name,
+//                         mothers_name: student.mothers_name,
+//                         contact_no: student.contact_no,
+//                         email_id: student.email_id,
+//                         enrollment_id: student.enrollment_id,
+//                         date_of_admission: student.date_of_admission,
+//                     }
+//                 };
+//             })
+//         )        ;
+
+//         // Filter out students with no fees data (null)
+//         const validStudentFees = studentFees.filter(item => item !== null);
+
+//         if (validStudentFees.length === 0) {
+//             return res.status(404).json({ message: 'No matching students with fees found' });
+//         }
+
+//         // Return the combined student and fees data
+//         res.status(200).json(validStudentFees);
+//     } catch (error) {
+//         console.error('Error fetching payment slip:', error); // Log error details for debugging
+//         res.status(500).json({ message: 'Server error', error: error.message });
+//     }
+// };
+
+//modified 04-02-2025 payment slip
+
 const getPaymentSlip = async (req, res) => {
     const { search } = req.query;
 
@@ -324,7 +399,7 @@ const getPaymentSlip = async (req, res) => {
         const students = await Student.find({
             $or: [
                 { enrollment_id: { $regex: search, $options: 'i' } },
-                { student_name: { $regex: search, $options: 'i' } } // Case insensitive search
+                { student_name: { $regex: search, $options: 'i' } }
             ]
         });
 
@@ -335,32 +410,32 @@ const getPaymentSlip = async (req, res) => {
         // Fetch fees for each student based on their enrollment ID
         const studentFees = await Promise.all(
             students.map(async (student) => {
-                const enrollmentId = String(student.enrollment_id).trim(); // Ensure it's a string and remove any leading/trailing spaces
-                console.log(`Looking for fees with enrollment_id: ${enrollmentId}`); // Log for debugging
+                const enrollmentId = String(student.enrollment_id).trim();
+                console.log(`Looking for fees with enrollment_id: ${enrollmentId}`);
 
-                // Ensure both student_enrollment_id and enrollment_id are treated as strings
-                const fees = await Fees.findOne({ student_enrollment_id: enrollmentId });
+                // Fetch all fee records for the student
+                const feesList = await Fees.find({ student_enrollment_id: enrollmentId });
 
-                // Log fees for debugging
-                console.log('Found fees:', fees);
+                console.log('Found fees:', feesList);
 
-                // Only return data if fees are found
-                if (!fees) {
-                    console.log(`Fees not found for student with enrollment_id: ${student.enrollment_id}`); // Log the missing fees
-                    return null; // Return null if no fees found
+                if (!feesList || feesList.length === 0) {
+                    console.log(`Fees not found for student with enrollment_id: ${student.enrollment_id}`);
+                    return null;
                 }
 
                 return {
                     student_id: student._id,
-                    fees: {
+                    fees: feesList.map(fees => ({
                         fees: fees.fees,
                         amt_paid: fees.amt_paid,
                         late_fine: fees.late_fine,
                         disc_amt: fees.disc_amt,
+                        total_paid_amt: fees.total_paid_amt,
                         payment_details: fees.payment_details,
                         payment_type: fees.payment_type,
                         cheque_number: fees.cheque_number,
-                    },
+                        fees_for_month: fees.fees_for_month,
+                    })),
                     student: {
                         student_name: student.student_name,
                         fathers_name: student.fathers_name,
@@ -374,7 +449,7 @@ const getPaymentSlip = async (req, res) => {
             })
         );
 
-        // Filter out students with no fees data (null)
+        // Filter out students with no fees data
         const validStudentFees = studentFees.filter(item => item !== null);
 
         if (validStudentFees.length === 0) {
@@ -384,10 +459,11 @@ const getPaymentSlip = async (req, res) => {
         // Return the combined student and fees data
         res.status(200).json(validStudentFees);
     } catch (error) {
-        console.error('Error fetching payment slip:', error); // Log error details for debugging
+        console.error('Error fetching payment slip:', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
+
 
 
 const calculateMonthlyIncomeExpense = async (req, res) => {

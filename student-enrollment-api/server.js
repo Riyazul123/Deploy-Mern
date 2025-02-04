@@ -19,7 +19,7 @@ const app = express();
 //     }
 // ));
 
-// CORS configuration
+// CORS configuration for Production
 app.use(cors({
     origin: "https://student-management-admin.vercel.app", // Frontend URL
     methods: ["GET", "POST", "PUT", "DELETE"], // Allow all necessary HTTP methods
@@ -72,17 +72,17 @@ mongoose.connect('mongodb+srv://vercel-admin-user-671566d006c9dc61232e4eed:YOuLr
 
 
 
-app.get("/test-connection", async (req, res) => {
-    try {
-      await mongoose.connect('mongodb+srv://vercel-admin-user-671566d006c9dc61232e4eed:YOuLrIjMTAqtb9Xh@cluster0.k9eba.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
-      res.status(200).send("MongoDB connection is successful.");
-      res.json("MongoDB connection is successful.");
-    } catch (err) {
-      res.status(500).send("MongoDB connection failed.");
-      res.json("MongoDB connection failed.");
-      res.json(err);
-    }
-  });
+// app.get("/test-connection", async (req, res) => {
+//     try {
+//       await mongoose.connect('mongodb+srv://vercel-admin-user-671566d006c9dc61232e4eed:YOuLrIjMTAqtb9Xh@cluster0.k9eba.mongodb.net/myFirstDatabase?retryWrites=true&w=majority');
+//       res.status(200).send("MongoDB connection is successful.");
+//       res.json("MongoDB connection is successful.");
+//     } catch (err) {
+//       res.status(500).send("MongoDB connection failed.");
+//       res.json("MongoDB connection failed.");
+//       res.json(err);
+//     }
+//   });
   
 
 // Start the server
