@@ -93,7 +93,7 @@ const PaymentSlip = () => {
   const generatePDF = async (student) => {
     const { fees } = student;
     const doc = new jsPDF("portrait", "pt", "a4");
-    const paymentDate = new Date(); // Use the actual payment date if available
+    const paymentDate = new Date(student.fees.fees_for_month); // Use the actual payment date if available
     const paymentMonth = paymentDate.toLocaleString('default', { month: 'long' });
     const paymentYear = paymentDate.getFullYear();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -205,7 +205,7 @@ const PaymentSlip = () => {
     doc.setFont("times", "bold");
     doc.text("Date of Payment:", 40, 380);
     doc.setFont("times", "normal");
-    doc.text(new Date().toLocaleDateString(), 150, 380);
+    doc.text(`${new Date(student.fees.fees_for_month).toLocaleDateString()}`, 150, 380);
 
 
 
@@ -324,11 +324,13 @@ const PaymentSlip = () => {
                     <TableCell>{student.student_name}</TableCell>
                     <TableCell>{student.fathers_name}</TableCell>
                     <TableCell>{student.fees.amt_paid + student.fees.fees}</TableCell>
+                    <TableCell>{student.fees.amt_paid}</TableCell>
+                    <TableCell>{student.fees.fees}</TableCell>
                     <TableCell>{new Date(student.fees.fees_for_month).toLocaleDateString()}</TableCell>
                     <TableCell>{new Date(student.fees.fees_for_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</TableCell>
 
-                    <TableCell>{student.fees.amt_paid}</TableCell>
-                    <TableCell>{student.fees.fees}</TableCell>
+                  
+                    
 
                     <TableCell>
                       <StyledButton
