@@ -159,7 +159,8 @@ const PaymentSlip = () => {
     doc.setFont("times", "bold");
     doc.text("Tuition Fees:", 40, 230);
     doc.setFont("times", "normal");
-    doc.text(`Rs. ${parseFloat(fees.amt_paid + fees.fees).toFixed(2)}`, 150, 230);
+   // doc.text(`Rs. ${parseFloat(fees.amt_paid + fees.fees).toFixed(2)}`, 150, 230);
+   doc.text(`Rs. ${parseFloat(fees.amt_paid).toFixed(2)}`, 150, 230);
 
     doc.setFont("times", "bold");
     doc.text("Late Payment:", 40, 260);
@@ -310,7 +311,6 @@ const PaymentSlip = () => {
                   <TableCell>Father's Name</TableCell>
                   <TableCell>Tuition Fees</TableCell>
                   <TableCell>Amount Paid</TableCell>
-                  <TableCell>Remaining Amount</TableCell>
                   <TableCell>Fees Date</TableCell>
                   <TableCell>Fees Month</TableCell>
                  
@@ -323,9 +323,8 @@ const PaymentSlip = () => {
                     <TableCell>{student.enrollment_id}</TableCell>
                     <TableCell>{student.student_name}</TableCell>
                     <TableCell>{student.fathers_name}</TableCell>
-                    <TableCell>{student.fees.amt_paid + student.fees.fees}</TableCell>
-                    <TableCell>{student.fees.amt_paid}</TableCell>
                     <TableCell>{student.fees.fees}</TableCell>
+                    <TableCell>{student.fees.amt_paid}</TableCell>
                     <TableCell>{new Date(student.fees.fees_for_month).toLocaleDateString()}</TableCell>
                     <TableCell>{new Date(student.fees.fees_for_month).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</TableCell>
 
