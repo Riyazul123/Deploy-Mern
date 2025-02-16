@@ -1,5 +1,5 @@
 const express = require('express');
-const { enrollStudent, getStudents,feesStudents, createFeeEntry, incExpEntry, getPaymentSlip, calculateMonthlyIncomeExpense } = require('../controllers/studentController');
+const { enrollStudent, getStudents, updateStudent, feesStudents, createFeeEntry, incExpEntry, getPaymentSlip, calculateMonthlyIncomeExpense } = require('../controllers/studentController');
 const router = express.Router();
 
 // // Route to enroll a student
@@ -13,6 +13,11 @@ router.post('/enroll', enrollStudent);
 
 // Route for getting all students
 router.get('/students', getStudents);
+
+
+// Route for updating a student by ID
+router.put('/students/:id', updateStudent); 
+
 
 router.get('/fees', feesStudents);
 

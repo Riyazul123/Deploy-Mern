@@ -134,6 +134,37 @@ const getStudents = async (req, res) => {
         res.status(500).send({ error: error.message });
     }
 };
+
+const updateStudent = async (req, res) => {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    try {
+
+        if (updatedData.student_dob) {
+            const dobParts = updatedData.student_dob.split('-'); // Splitting "29-10-2016" -> ["29", "10", "2016"]
+            const admisParts = updatedData.date_of_admission.split('-');
+            if (dobParts.length === 3) {
+                updatedData.student_dob = new Date(`${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`); // Convert to "2016-10-29"
+                updatedData.date_of_admission = new Date(`${admisParts[2]}-${admisParts[1]}-${admisParts[0]}`); 
+            } else {
+                return res.status(400).json({ message: 'Invalid date format for student_dob or date_of_admission' });
+            }
+        }
+
+        const updatedStudent = await Student.findByIdAndUpdate(id, updatedData, { new: true });
+
+        if (!updatedStudent) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        res.status(200).json({ message: 'Student updated successfully', student: updatedStudent });
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating student', error: error.message });
+    }
+};
+
+
 const feesStudents = async (req, res) => {
     const { search } = req.query;
 
@@ -255,7 +286,9 @@ const createFeeEntry = async (req, res) => {
         const total_paid_amt = amt_paid + late_fine - disc_amt;
 
         // Ensure the payment does not exceed the remaining fees
-        const remaining_fees = student.fees - total_paid_amt;
+        // const remaining_fees = student.fees - total_paid_amt;
+
+       const remaining_fees = student.fees ;
 
         if (remaining_fees < 0) {
             return res.status(400).json({
@@ -270,7 +303,7 @@ const createFeeEntry = async (req, res) => {
         // Create a new fee entry
         const feeEntry = new Fees({
             student_enrollment_id,
-            fees: remaining_fees, // Remaining fees after this payment
+            fees: remaining_fees,
             amt_paid,
             late_fine,
             disc_amt,
@@ -550,4 +583,4 @@ const formatDate = (date) => {
 
 
 
-module.exports = { enrollStudent, getStudents, feesStudents, createFeeEntry, incExpEntry, getPaymentSlip, calculateMonthlyIncomeExpense };
+module.exports = { enrollStudent, getStudents, updateStudent, feesStudents, createFeeEntry, incExpEntry, getPaymentSlip, calculateMonthlyIncomeExpense };
