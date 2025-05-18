@@ -164,6 +164,7 @@ import BackgroundImage from '../assets/backg.jpg';
 import MenuIcon from '@mui/icons-material/Menu';
 import IncomeIcon from '../assets/income.png';
 import CalculationIcon from '../assets/calculation.png';
+import Allocation from '../assets/allocation.png';
 
 const AdminDashboard = () => {
     const location = useLocation(); // Hook to get the current location
@@ -171,12 +172,13 @@ const AdminDashboard = () => {
 
     // Menu items for the drawer
     const menuItems = [
-       
         { to: '/student/enrollment', label: 'Student Enrollment', icon: StudentIcon },
         { to: '/fees-calculator', label: 'Fees Calculator', icon: FeesIcon },
         { to: '/income-expense', label: 'Income Expense Form', icon: IncomeIcon },
         { to: '/monthly-calculation', label: 'Monthly Calculation', icon: CalculationIcon },
-        { to: '/payment-slip', label: 'Payment Slip', icon: FeesIcon }
+        { to: '/payment-slip', label: 'Payment Slip', icon: FeesIcon },
+        { to: '/student-allocation', label: 'Student Allocation', icon: Allocation }
+
     ];
 
     // Toggle drawer open/close

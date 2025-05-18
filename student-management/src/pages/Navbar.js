@@ -92,6 +92,7 @@ import HomeIcon from '../assets/home.png';
 import IncomeIcon from '../assets/income.png';
 import CalculationIcon from '../assets/calculation.png';
 import { useNavigate } from 'react-router-dom';
+import Allocation from '../assets/allocation.png';
 const NavbarScreen = () => {
     const location = useLocation(); // Hook to get the current route
     const [drawerOpen, setDrawerOpen] = React.useState(false); // Drawer state
@@ -103,7 +104,9 @@ const NavbarScreen = () => {
         { to: '/fees-calculator', label: 'Fees Calculator', icon: FeesIcon },
         { to: '/income-expense', label: 'Income Expense Form', icon: IncomeIcon },
         { to: '/monthly-calculation', label: 'Monthly Calculation', icon: CalculationIcon },
-        { to: '/payment-slip', label: 'Payment Slip', icon: FeesIcon }
+        { to: '/payment-slip', label: 'Payment Slip', icon: FeesIcon },
+        { to: '/student-allocation', label: 'Student Allocation', icon: Allocation }
+        
     ];
 
     const toggleDrawer = (open) => () => {
@@ -114,7 +117,7 @@ const NavbarScreen = () => {
         // Implement your logout functionality here
         console.log("Logging out...");
 
-        navigate('/Adminlogin'); 
+        navigate('/'); 
 
     };
 

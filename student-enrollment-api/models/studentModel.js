@@ -63,33 +63,6 @@ const studentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 
-
-// studentSchema.pre('save', async function(next) {
-//     const student = this;
-    
-//     // Extract initials from the student's name
-//     const initials = student.student_name.split(' ').map(name => name[0].toUpperCase()).join('');
-    
-//     // Format the date of admission as ddmmyy
-//     const admissionDate = new Date(student.date_of_admission);
-//     const formattedDate = `${String(admissionDate.getDate()).padStart(2, '0')}${String(admissionDate.getMonth() + 1).padStart(2, '0')}${String(admissionDate.getFullYear()).slice(-2)}`;
-    
-//     // Count the number of students with the same initials and admission date
-//     const sameDayStudents = await mongoose.model('Student').countDocuments({
-//         student_name: student.student_name,
-//         date_of_admission: admissionDate,
-//     });
-
-//     // Generate numeric sequence (e.g., 01, 02)
-//     const numericSequence = String(sameDayStudents + 1).padStart(2, '0');
-    
-//     // Construct the enrollment ID
-//     student.enrollment_id = `${initials}-${formattedDate}-${numericSequence}`;
-    
-//     next();
-// });
-
-
 studentSchema.pre('save', async function (next) {
     const student = this;
 
