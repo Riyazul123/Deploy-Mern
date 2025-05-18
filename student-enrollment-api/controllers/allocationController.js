@@ -77,7 +77,7 @@ const allocateStudent = async (req, res) => {
 
     // 1. Get existing allocations for this teacher
     const existingQuery = `
-      SELECT student_id FROM T_NGO_TEACHER_STUDENT_ALLOCATION
+      SELECT student_id FROM t_ngo_teacher_student_allocation
       WHERE teacher_id = ?
     `;
 
@@ -97,7 +97,7 @@ const allocateStudent = async (req, res) => {
       }
 
       const insertQuery = `
-        INSERT INTO T_NGO_TEACHER_STUDENT_ALLOCATION 
+        INSERT INTO t_ngo_teacher_student_allocation 
         (student_id, teacher_id, student_name, allotment_datetime)
         VALUES ?
       `;
@@ -137,7 +137,7 @@ const getAllocationById = async (req, res) => {
         }
 
         const query = `
-            SELECT student_id , student_name from T_NGO_TEACHER_STUDENT_ALLOCATION 
+            SELECT student_id , student_name from t_ngo_teacher_student_allocation 
             WHERE teacher_id = ?
         `;
 
