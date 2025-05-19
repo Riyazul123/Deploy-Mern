@@ -5,7 +5,7 @@ const { getAllStudents}= require('../controllers/studentsController');
 const { allocateStudent,getAllocationById}= require('../controllers/allocationController');
 const {gettargetStudentBYID ,targetStudent,getbaselineStudentByID,createBaseline,getConsecutiveIndependentResponses, getupdateTargetData, getMaintenanceData}= require('../controllers/notebookRoutes');
 
-const { createBehaviour,createNotes,createCommunication}= require('../controllers/behaviourController');
+const { createBehaviour,createNotes,createCommunication, createEyeCommunication}= require('../controllers/behaviourController');
 
 const { getStudentReport}= require('../controllers/studentReportCardController');
 
@@ -59,6 +59,8 @@ router.put('/getupdateTargetData',getupdateTargetData)
 
 router.get('/maintenance', getMaintenanceData);
 router.get('/getStudentReport', getStudentReport);
+
+router.post('/createEyeCommunication', createEyeCommunication);
 
 
 

@@ -20,7 +20,7 @@ const db = require('../db');
 
 const gettargetStudentBYID = async (req, res) => {
     const { studentID } = req.query;
-    db.query('SELECT * FROM T_NGO_TARGET WHERE StudentID = ?', [studentID], (err, result) => {
+    db.query('SELECT * FROM t_ngo_target WHERE StudentID = ?', [studentID], (err, result) => {
         if (err) return res.status(500).send(err);
         res.json(result);
     });
@@ -35,7 +35,7 @@ const targetStudent = async (req, res) => {
         return res.status(400).json({ error: 'Headers are required' });
     }
 
-    const sql = `INSERT INTO T_NGO_TARGET (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+    const sql = `INSERT INTO t_ngo_target (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
 
     const values = [];
 
@@ -56,7 +56,7 @@ const targetStudent = async (req, res) => {
 // ✅ Fetch Baseline Data
 const getbaselineStudentByID = async (req, res) => {
     const { studentID } = req.query;
-    db.query('SELECT * FROM T_NGO_BASELINE WHERE StudentID = ?', [studentID], (err, result) => {
+    db.query('SELECT * FROM t_ngo_baseline WHERE StudentID = ?', [studentID], (err, result) => {
         if (err) return res.status(500).send(err);
         res.json(result);
     });
@@ -115,13 +115,13 @@ const createBaseline = async (req, res) => {
     });
   
     // Insert into baseline
-    const baselineSQL = `INSERT INTO T_NGO_BASELINE (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+    const baselineSQL = `INSERT INTO t_ngo_baseline (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
     db.query(baselineSQL, [baselineValues], (err, result) => {
       if (err) return res.status(500).json({ error: 'Baseline Insert Failed', details: err });
   
       // Insert into target
       if (targetValues.length > 0) {
-        const targetSQL = `INSERT INTO T_NGO_TARGET (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+        const targetSQL = `INSERT INTO t_ngo_target (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
         db.query(targetSQL, [targetValues], (targetErr) => {
           if (targetErr) console.error("Target Insert Failed", targetErr);
         });
@@ -129,7 +129,7 @@ const createBaseline = async (req, res) => {
   
       // Insert into maintenance
       if (maintenanceValues.length > 0) {
-        const maintenanceSQL = `INSERT INTO T_NGO_MAINTAINANCE (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+        const maintenanceSQL = `INSERT INTO t_ngo_maintainance (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
         db.query(maintenanceSQL, [maintenanceValues], (maintErr) => {
           if (maintErr) console.error("Maintenance Insert Failed", maintErr);
         });
@@ -152,7 +152,7 @@ const createBaseline = async (req, res) => {
   const getMaintenanceData = (req, res) => {
     const { studentId } = req.query;
   
-    const sql = `SELECT * FROM T_NGO_MAINTAINANCE WHERE StudentID = ? ORDER BY DateTime DESC`;
+    const sql = `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? ORDER BY DateTime DESC`;
   
     db.query(sql, [studentId], (err, result) => {
       if (err) return res.status(500).json({ error: 'Failed to fetch maintenance data', details: err });
@@ -235,7 +235,7 @@ const getupdateTargetData = (req, res) => {
   updatedTargets.forEach(target => {
     const { id, studentID, EmpID, HeaderName, SubHeaderName, SD, Prompt } = target;
 
-    const selectQuery = `SELECT * FROM T_NGO_TARGET WHERE id = ?`;
+    const selectQuery = `SELECT * FROM t_ngo_target WHERE id = ?`;
 
     db.query(selectQuery, [id], (err, rows) => {
       if (err) return console.error("Select error:", err);
@@ -261,7 +261,7 @@ const getupdateTargetData = (req, res) => {
         if (newCount > 3) {
           // 👉 Move to Maintenance
           const insertMaintenance = `
-            INSERT INTO T_NGO_MAINTENANCE (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt, DateTime)
+            INSERT INTO t_ngo_maintainance (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt, DateTime)
             VALUES (?, ?, ?, ?, ?, ?, NOW())
           `;
           db.query(insertMaintenance, [EmpID, studentID, HeaderName, SubHeaderName, SD, Prompt], (err) => {
@@ -275,7 +275,7 @@ const getupdateTargetData = (req, res) => {
 
         } else {
           const updateQuery = `
-            UPDATE T_NGO_TARGET 
+            UPDATE t_ngo_target 
             SET HeaderName=?, SubHeaderName=?, SD=?, Prompt=?, DateTime=NOW(), count=?
             WHERE id = ?
           `;

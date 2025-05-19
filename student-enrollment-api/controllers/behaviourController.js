@@ -60,12 +60,19 @@ db.query(sql, [values], (err, result) => {
 
 
 // Create or update communication record
-const createCommunication = (req, res) => {
+const createEyeCommunication = (req, res) => {
     const { studentID, EmpID, CommunicationType, Prompted, Independent } = req.body;
   
-    if (!studentID || !EmpID || !CommunicationType || !Prompted || !Independent) {
-      return res.status(400).json({ error: "All fields are required." });
-    }
+   // Validate required fields only
+  if (!studentID || !EmpID || !CommunicationType) {
+    return res.status(400).json({ error: "studentID, EmpID, and CommunicationType are required." });
+  }
+
+  // At least one of Prompted or Independent must be present
+  if (Prompted === undefined && Independent === undefined) {
+    return res.status(400).json({ error: "At least one of Prompted or Independent is required." });
+  }
+
   
     // Check if the record already exists
     const checkSql = `SELECT * FROM t_ngo_communication WHERE studentID = ? AND CommunicationType = ?`;
@@ -103,5 +110,75 @@ const createCommunication = (req, res) => {
     });
   };
   
+const createCommunication = (req, res) => {
+  const { title, empId, rollNumber } = req.query; // Assuming you're passing these as query parameters
+  const communicationData = req.body;
 
-module.exports={createBehaviour, createNotes, createCommunication};
+  if (!title || !empId || !rollNumber) {
+    return res.status(400).json({ error: "Title, empId, and rollNumber are required." });
+  }
+
+  if (!Array.isArray(communicationData) || communicationData.length === 0) {
+    return res.status(400).json({ error: "Body must be a non-empty array." });
+  }
+
+  let completed = 0;
+  let hasError = false;
+
+  communicationData.forEach((entry) => {
+    const { type, prompted, independent } = entry;
+
+    if (!type || prompted == null || independent == null) {
+      hasError = true;
+      return res.status(400).json({ error: "Each entry must contain type, prompted, and independent." });
+    }
+
+    const checkSql = `SELECT * FROM t_ngo_communication WHERE studentID = ? AND CommunicationType = ?`;
+
+    db.query(checkSql, [rollNumber, type], (err, result) => {
+      if (hasError) return;
+      if (err) {
+        hasError = true;
+        return res.status(500).json({ error: "Database error", details: err });
+      }
+
+      if (result.length > 0) {
+        // Update existing record
+        const updateSql = `
+          UPDATE t_ngo_communication 
+          SET Prompted = ?, Independent = ?, DateTime = CURRENT_TIMESTAMP 
+          WHERE studentID = ? AND CommunicationType = ?`;
+
+        db.query(updateSql, [prompted, independent, rollNumber, type], (updateErr) => {
+          if (hasError) return;
+          if (updateErr) {
+            hasError = true;
+            return res.status(500).json({ error: "Database error", details: updateErr });
+          }
+          completed++;
+          if (completed === communicationData.length && !hasError) {
+            res.status(200).json({ message: "All communication records processed successfully!" });
+          }
+        });
+
+      } else {
+        // Insert new record
+        const insertSql = `INSERT INTO t_ngo_communication (studentID, EmpID, CommunicationType, Prompted, Independent) VALUES (?, ?, ?, ?, ?)`;
+
+        db.query(insertSql, [rollNumber, empId, type, prompted, independent], (insertErr) => {
+          if (hasError) return;
+          if (insertErr) {
+            hasError = true;
+            return res.status(500).json({ error: "Database error", details: insertErr });
+          }
+          completed++;
+          if (completed === communicationData.length && !hasError) {
+            res.status(201).json({ message: "All communication records processed successfully!" });
+          }
+        });
+      }
+    });
+  });
+};
+
+module.exports={createBehaviour, createNotes, createCommunication,createEyeCommunication};

@@ -406,10 +406,83 @@ const StudentNotebook = () => {
     }
 
   }
-  const handleCommunication = async (title, empId, rollNumber) => {
+  const handleEyeCommunication = async (title, empId, rollNumber,promptedCount,independentCount) => {
 
-    console.log("title,empId, rollNumber", title, empId, rollNumber)
+
+    const reqBody=
+      {
+      studentID : rollNumber, 
+      EmpID : empId, 
+      CommunicationType : title,
+      Prompted : promptedCount, 
+      Independent: independentCount 
+    }
+
+    try {
+      const response = await axios.post(`${baseUrl}/api/createEyeCommunication`, reqBody);
+      console.log(response.data);
+
+      setMessage("Behaviour submitted Successfully");
+      setPopupType("success"); // Set popup type to success (green)
+      setShowPopup(true);
+
+      setCommunicationDialog(false); // Close dialog on success
+      setPromptedCount(0);
+      setIndependentCount(0);
+    } catch (error) {
+      setMessage("Error submitting behaviours");
+      setPopupType("error"); // Set popup type to success (green)
+      setShowPopup(true);
+
+      console.error("Error submitting behaviours:", error);
+    }
+  
+   
+    console.log("title,empId, rollNumber", title, empId, rollNumber,promptedCount,independentCount)
+
+    
   }
+
+  const handleCommunication = async (title, empId, rollNumber, entries) => {
+  const queryParams = new URLSearchParams({
+    title,
+    empId,
+    rollNumber
+  });
+
+  try {
+    const response = await fetch(`${baseUrl}/api/createCommunication?${queryParams.toString()}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(entries)
+    });
+
+    const result = await response.json();
+    if (response.ok) {
+      console.log("Success:", result.message);
+      setMessage("All communication records processed successfully!");
+      setPopupType("success"); // Set popup type to success (green)
+      setShowPopup(true);
+      setEntries([]);
+      // You can show a toast or notification here
+    } else {
+      console.error("Error:", result.error);
+      setMessage("Error submitting ");
+      setPopupType("error"); // Set popup type to success (green)
+      setShowPopup(true);
+      // Optionally show error message to user
+    }
+  } catch (error) {
+    console.error("Network error:", error);
+    setMessage("Network Error");
+      setPopupType("error"); // Set popup type to success (green)
+      setShowPopup(true);
+    // Optionally show a network error message
+  }
+};
+
 
   useEffect(() => {
     setFormData((prevState) => ({
@@ -1111,7 +1184,7 @@ const StudentNotebook = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => handleCommunication(selectedCategory, empid, selectedStudent.rollNumber)}
+                      onClick={() => handleEyeCommunication(selectedCategory, empid, selectedStudent.rollNumber,promptedCount,independentCount)}
                       disabled={promptedCount === 0 && independentCount === 0}
                       sx={{ borderRadius: 3, paddingX: 4, textTransform: "none", fontSize: 16 }}
                     >
