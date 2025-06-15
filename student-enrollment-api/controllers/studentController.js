@@ -413,10 +413,12 @@ const createFeeEntry = (req, res) => {
 
         function insertFee(student) {
             const total_paid_amt = amt_paid + late_fine - disc_amt;
-            const remaining_fees = student.fees;
-             const id = crypto.randomBytes(12).toString('hex');
+            const fees = student.fees;
+            const id = crypto.randomBytes(12).toString('hex');
+            const createdAt = new Date();
+            const updatedAt = new Date();
 
-            if (remaining_fees < 0) {
+            if (fees < 0) {
                 return res.status(400).json({ message: 'Amount paid exceeds the remaining fees' });
             }
 
@@ -424,12 +426,12 @@ const createFeeEntry = (req, res) => {
                 id,student_enrollment_id, fees, amt_paid, late_fine, disc_amt,
                 total_paid_amt, payment_details, payment_type, cheque_number,
                 fees_for_month, createdAt, updatedAt
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`;
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)`;
 
             const values = [
                 id,
                 student_enrollment_id,
-                remaining_fees,
+                fees,
                 amt_paid,
                 late_fine,
                 disc_amt,
@@ -437,7 +439,9 @@ const createFeeEntry = (req, res) => {
                 payment_details,
                 payment_type,
                 cheque_number,
-                fees_for_month
+                fees_for_month,
+                createdAt,
+                updatedAt
             ];
 
             db.query(insertQuery, values, (err, result) => {
