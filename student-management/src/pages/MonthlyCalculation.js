@@ -270,6 +270,26 @@ const MonthlyCalculationForm = () => {
       [name]: value,
     });
   };
+const formatDate = (dateStr) => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const parts = dateStr.split('/');
+  if (parts.length !== 3) return 'Invalid-Date';
+
+  const [day, month, year] = parts.map(p => p.trim());
+
+  const monthIndex = parseInt(month, 10) - 1;
+  const monthName = months[monthIndex];
+  const paddedDay = day.padStart(2, '0');
+
+  if (!monthName || isNaN(paddedDay) || isNaN(year)) return 'Invalid-Date';
+
+  return `${paddedDay}-${monthName}-${year}`;
+};
+
+
+
 
   const handleSubmit = async () => {
     setLoading(true); 
@@ -377,7 +397,8 @@ const MonthlyCalculationForm = () => {
                       <TableBody>
                         {(result.incomeRows || []).map((row, index) => (
                           <TableRow key={`income-${index}`}>
-                            <TableCell>{row.date}</TableCell>
+                            {/* <TableCell>{row.date}</TableCell> */}
+                            <TableCell>{formatDate(row.date)}</TableCell>
                             <TableCell>{row.incomeHead}</TableCell>
                             <TableCell>{row.receivedFrom}</TableCell>
                             <TableCell>{row.paymentDetails}</TableCell>
@@ -397,7 +418,8 @@ const MonthlyCalculationForm = () => {
                             <TableCell />
                             <TableCell />
                             <TableCell />
-                            <TableCell>{row.date}</TableCell>
+                            {/* <TableCell>{row.date}</TableCell> */}
+                            <TableCell>{formatDate(row.date)}</TableCell>
                             <TableCell>{row.expensesHead}</TableCell>
                             <TableCell>{row.paymentTo}</TableCell>
                             <TableCell>{row.paymentDetails}</TableCell>
