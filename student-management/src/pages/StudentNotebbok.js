@@ -54,6 +54,9 @@ import NavbarScreen from "./Navbar";
 const headerOptions = ["Personal", "Social", "Academic", "ReCreational", "Computer", "Self Help", "Vocational"];
 // const promptOptions = ["Full Physical", "Light Touch", "Gesture", "Model", "Shadow", "Independent Response", "Vocal Prompt", "Partial Vocal"];
 const promptOptions = ["Independent Response", "No"];
+const targetpromptOptions = ["Full Physical", "Light Touch", "Gesture", "Model", "Shadow", "Vocal Prompt", "Partial Vocal", "No", "Independent Response"];
+
+
 
 
 
@@ -782,7 +785,7 @@ const StudentNotebook = () => {
                   {/* Row 1: Anticident & Behaviour */}
                   <Grid item xs={6}>
                     <TextField
-                      label="Anticident"
+                      label="Antecedent"
                       name="Anticident"
                       value={formData.Anticident}
                       onChange={handleChange}
@@ -1631,7 +1634,7 @@ const StudentNotebook = () => {
                                             handleSubHeaderChange(index, subIndex, "prompt", e.target.value)
                                           }
                                         >
-                                          {promptOptions.map((prompt) => (
+                                          {targetpromptOptions.map((prompt) => (
                                             <MenuItem key={prompt} value={prompt}>{prompt}</MenuItem>
                                           ))}
                                         </Select>
