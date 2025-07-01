@@ -806,14 +806,14 @@ const calculateMonthlyIncomeExpense = (req, res) => {
 
                 const incomeRows = [
                     ...incomeData.map(entry => ({
-                        date: new Date(entry.date_of_inexp).toLocaleDateString(),
+                        date: formatDate(new Date(entry.date_of_inexp)),
                         incomeHead: entry.inExp_details || "N/A",
                         receivedFrom: entry.rec_send_name || "N/A",
                         amount: parseFloat(entry.amt_paid).toFixed(2),
                         paymentDetails: entry.payment_details || "00"
                     })),
                     ...feesIncomeData.map(fees => ({
-                        date: new Date(fees.fees_for_month).toLocaleDateString(),
+                        date: formatDate(new Date(fees.fees_for_month)),
                         incomeHead: "Tuition Fees",
                         receivedFrom: fees.student_enrollment_id,
                         amount: parseFloat(fees.total_paid_amt).toFixed(2),
@@ -822,7 +822,7 @@ const calculateMonthlyIncomeExpense = (req, res) => {
                 ];
 
                 const expenseRows = expenseData.map(entry => ({
-                    date: new Date(entry.date_of_inexp).toLocaleDateString(),
+                    date: formatDate(new Date(entry.date_of_inexp)),
                     expensesHead: entry.inExp_details || "N/A",
                     paymentTo: entry.rec_send_name || "N/A",
                     amount: parseFloat(entry.amt_paid).toFixed(2),

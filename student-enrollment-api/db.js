@@ -39,7 +39,7 @@ const pool = mysql.createPool({
     password: 'nBu2oT89tqN9cdheSFGJ',
     database: 'binrmo1olh0fqhj5vobo',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 4,
   queueLimit: 0
 });
 

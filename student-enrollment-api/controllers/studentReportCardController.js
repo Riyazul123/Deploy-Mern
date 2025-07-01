@@ -136,14 +136,23 @@ const getStudentReport = (req, res) => {
   const formattedStart = moment(fromDate).format('YYYY-MM-DD HH:mm:ss');
   const formattedEnd = moment(toDate).format('YYYY-MM-DD HH:mm:ss');
 
+  // const queries = {
+  //   baseline: `SELECT * FROM t_ngo_baseline WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+  //   target: `SELECT * FROM t_ngo_target WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+  //   maintenance: `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+  //   communication: `SELECT * FROM t_ngo_communication WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+  //   behavior: `SELECT * FROM t_ngo_behaviour WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+  //   notes: `SELECT * FROM t_ngo_notes WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`
+  // };
   const queries = {
-    baseline: `SELECT * FROM t_ngo_baseline WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-    target: `SELECT * FROM t_ngo_target WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-    maintenance: `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-    communication: `SELECT * FROM t_ngo_communication WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-    behavior: `SELECT * FROM t_ngo_behaviour WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-    notes: `SELECT * FROM t_ngo_notes WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`
-  };
+  baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+  target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+  maintenance:   'SELECT * FROM t_ngo_maintainance   WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+  communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+  behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+  notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
+};
+
 
   const data = {};
   let completed = 0;
@@ -152,8 +161,8 @@ const getStudentReport = (req, res) => {
   for (let key in queries) {
     db.query(queries[key], [studentID, formattedStart, formattedEnd], (err, result) => {
       if (err) {
-        console.error(`Error fetching ${key}:`, err);
-        return res.status(500).json({ message: `Error fetching ${key}` });
+    console.error(`Error fetching ${key}:`, err); // 👈 full error object
+    return res.status(500).json({ message: `Error fetching ${key}`, error: err.sqlMessage || err.message });
       }
 
       data[key] = result;
