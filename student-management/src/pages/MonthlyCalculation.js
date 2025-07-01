@@ -274,7 +274,7 @@ const formatDate = (dateStr) => {
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const parts = dateStr.split('/');
+  const parts = dateStr.split('-');
   if (parts.length !== 3) return 'Invalid-Date';
 
   const [day, month, year] = parts.map(p => p.trim());
