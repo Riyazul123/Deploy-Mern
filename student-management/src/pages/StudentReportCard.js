@@ -391,6 +391,7 @@ const StudentReportCard = () => {
   const reportRef = useRef();
   const [studentName, setStudentName] = useState(""); // "" → shows "Loading..."
   const fetchReport = async () => {
+    fetchStudentName()
     setLoading(true);
     try {
       const res = await axios.get(`${baseUrl}/api/getStudentReport`, {
@@ -401,6 +402,7 @@ const StudentReportCard = () => {
         },
       });
       setReportData(res.data);
+
     } catch (err) {
       console.error('Failed to fetch report:', err);
       setReportData(null);
@@ -421,8 +423,6 @@ const StudentReportCard = () => {
     };
     html2pdf().from(element).set(opt).save();
   };
-useEffect(() => {
-    if (!inputStudentID) return;                     // Skip if ID missing
 
     const fetchStudentName = async () => {
       try {
@@ -441,7 +441,7 @@ useEffect(() => {
     };
 
     fetchStudentName();
-  }, [inputStudentID])
+ 
   return (
     <>
       <TeacherNavbarScreen />

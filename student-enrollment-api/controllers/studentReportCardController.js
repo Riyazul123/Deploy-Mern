@@ -225,51 +225,86 @@ const moment = require('moment');
 //   }
 // };
 
+// const getStudentReport = async (req, res) => {
+//   const { studentID, fromDate, toDate } = req.query;
+
+//   if (!studentID || !fromDate || !toDate) {
+//     return res.status(400).json({ message: "studentID, fromDate, and toDate are required" });
+//   }
+
+//   const formattedStart = moment(fromDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+//   const formattedEnd = moment(toDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+
+//   const queries = {
+//     baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     maintenance:   'SELECT * FROM t_ngo_maintainance  WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
+//   };
+
+//   const data = {};
+
+//   try {
+//     const connection = await db.getConnection(); // Get one connection from the pool
+
+//     try {
+//       for (let key in queries) {
+//         const [rows] = await connection.execute(
+//           queries[key],
+//           [studentID, formattedStart, formattedEnd]
+//         );
+//         data[key] = rows;
+//       }
+
+//       res.status(200).json({
+//         studentID,
+//         period: { start: formattedStart, end: formattedEnd },
+//         ...data
+//       });
+
+//     } finally {
+//       connection.release(); // ✅ always release connection
+//     }
+//   } catch (err) {
+//     console.error("Error fetching student report:", err);
+//     res.status(500).json({ message: "Server error", error: err.message });
+//   }
+// };
 const getStudentReport = async (req, res) => {
   const { studentID, fromDate, toDate } = req.query;
-
   if (!studentID || !fromDate || !toDate) {
     return res.status(400).json({ message: "studentID, fromDate, and toDate are required" });
   }
 
-  const formattedStart = moment(fromDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-  const formattedEnd = moment(toDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+  const start = moment(fromDate).startOf("day").format("YYYY-MM-DD HH:mm:ss");
+  const end   = moment(toDate)  .endOf("day")  .format("YYYY-MM-DD HH:mm:ss");
 
   const queries = {
-    baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-    target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-    maintenance:   'SELECT * FROM t_ngo_maintainance  WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-    communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-    behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-    notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
+    baseline:      "SELECT * FROM t_ngo_baseline      WHERE StudentID=? AND DateTime BETWEEN ? AND ?",
+    target:        "SELECT * FROM t_ngo_target        WHERE StudentID=? AND DateTime BETWEEN ? AND ?",
+    maintenance:   "SELECT * FROM t_ngo_maintainance  WHERE StudentID=? AND DateTime BETWEEN ? AND ?",
+    communication: "SELECT * FROM t_ngo_communication WHERE StudentID=? AND DateTime BETWEEN ? AND ?",
+    behavior:      "SELECT * FROM t_ngo_behaviour     WHERE StudentID=? AND DateTime BETWEEN ? AND ?",
+    notes:         "SELECT * FROM t_ngo_notes         WHERE StudentID=? AND DateTime BETWEEN ? AND ?"
   };
 
-  const data = {};
-
   try {
-    const connection = await db.getConnection(); // Get one connection from the pool
-
-    try {
-      for (let key in queries) {
-        const [rows] = await connection.execute(
-          queries[key],
-          [studentID, formattedStart, formattedEnd]
-        );
-        data[key] = rows;
-      }
-
-      res.status(200).json({
-        studentID,
-        period: { start: formattedStart, end: formattedEnd },
-        ...data
-      });
-
-    } finally {
-      connection.release(); // ✅ always release connection
+    const data = {};
+    for (const key of Object.keys(queries)) {
+      const [rows] = await db.execute(queries[key], [studentID, start, end]);
+      data[key] = rows;
     }
+
+    return res.status(200).json({
+      studentID,
+      period: { start, end },
+      ...data
+    });
   } catch (err) {
     console.error("Error fetching student report:", err);
-    res.status(500).json({ message: "Server error", error: err.message });
+    return res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
