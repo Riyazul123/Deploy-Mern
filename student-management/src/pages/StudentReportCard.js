@@ -440,8 +440,7 @@ const StudentReportCard = () => {
       }
     };
 
-    fetchStudentName();
- 
+   
   return (
     <>
       <TeacherNavbarScreen />

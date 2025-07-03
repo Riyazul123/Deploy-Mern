@@ -45,5 +45,5 @@ const pool = mysql.createPool({
 
 
 // Export the promise-wrapped pool
-module.exports = pool;
+module.exports = pool.promise();
 
