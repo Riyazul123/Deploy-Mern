@@ -178,14 +178,60 @@ const moment = require('moment');
 //     });
 //   }
 // };
-const getStudentReport = (req, res) => {
+
+
+// const getStudentReport = (req, res) => {
+//   const { studentID, fromDate, toDate } = req.query;
+
+//   if (!studentID || !fromDate || !toDate) {
+//     return res.status(400).json({ message: "studentID, fromDate, and toDate are required" });
+//   }
+
+//   // Cover entire date range
+//   const formattedStart = moment(fromDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+//   const formattedEnd = moment(toDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+
+//   const queries = {
+//     baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     maintenance:   'SELECT * FROM t_ngo_maintainance  WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//     notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
+//   };
+
+//   const data = {};
+//   let completed = 0;
+//   const total = Object.keys(queries).length;
+
+//   for (let key in queries) {
+//     db.query(queries[key], [studentID, formattedStart, formattedEnd], (err, result) => {
+//       if (err) {
+//         console.error(`Error fetching ${key}:`, err);
+//         return res.status(500).json({ message: `Error fetching ${key}`, error: err.sqlMessage || err.message });
+//       }
+
+//       data[key] = result;
+//       completed++;
+
+//       if (completed === total) {
+//         res.status(200).json({
+//           studentID,
+//           period: { start: formattedStart, end: formattedEnd },
+//           ...data
+//         });
+//       }
+//     });
+//   }
+// };
+
+const getStudentReport = async (req, res) => {
   const { studentID, fromDate, toDate } = req.query;
 
   if (!studentID || !fromDate || !toDate) {
     return res.status(400).json({ message: "studentID, fromDate, and toDate are required" });
   }
 
-  // Cover entire date range
   const formattedStart = moment(fromDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
   const formattedEnd = moment(toDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
 
@@ -199,29 +245,32 @@ const getStudentReport = (req, res) => {
   };
 
   const data = {};
-  let completed = 0;
-  const total = Object.keys(queries).length;
 
-  for (let key in queries) {
-    db.query(queries[key], [studentID, formattedStart, formattedEnd], (err, result) => {
-      if (err) {
-        console.error(`Error fetching ${key}:`, err);
-        return res.status(500).json({ message: `Error fetching ${key}`, error: err.sqlMessage || err.message });
+  try {
+    const connection = await db.getConnection(); // Get one connection from the pool
+
+    try {
+      for (let key in queries) {
+        const [rows] = await connection.execute(
+          queries[key],
+          [studentID, formattedStart, formattedEnd]
+        );
+        data[key] = rows;
       }
 
-      data[key] = result;
-      completed++;
+      res.status(200).json({
+        studentID,
+        period: { start: formattedStart, end: formattedEnd },
+        ...data
+      });
 
-      if (completed === total) {
-        res.status(200).json({
-          studentID,
-          period: { start: formattedStart, end: formattedEnd },
-          ...data
-        });
-      }
-    });
+    } finally {
+      connection.release(); // ✅ always release connection
+    }
+  } catch (err) {
+    console.error("Error fetching student report:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
-
 
 module.exports = { getStudentReport };
