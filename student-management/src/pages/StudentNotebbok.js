@@ -157,12 +157,12 @@ const StudentNotebook = () => {
 
 
   const handleAllTrailSheetClick = async (category, rollNumber) => {
-    console.log("title===>" + rollNumber, category)
+    console.log("title===>" + rollNumber, category,empid)
     setSelectedCategory(category)
 
     if (category === "Target") {
       try {
-        const res = await axios.get(`${baseUrl}/api/targetStudentBYID?studentID=${rollNumber}`);
+        const res = await axios.get(`${baseUrl}/api/targetStudentBYID?studentID=${rollNumber}&empid=${empid}`);
         const targetData = res.data;
 
         // Convert DB structure to frontend format
@@ -193,7 +193,7 @@ const StudentNotebook = () => {
       }
     } else if (category === "Maintainance") {
       try {
-        const res = await axios.get(`${baseUrl}/api/maintenance?studentId=${rollNumber}`);
+        const res = await axios.get(`${baseUrl}/api/maintenance?studentId=${rollNumber}&empid=${empid}`);
         const targetData = res.data;
 
         // Convert DB structure to frontend format

@@ -2,7 +2,7 @@ const express = require('express');
 const { authController}= require('../controllers/loginController');
 const { registerEmployee, getEmployeeById, getAllEmployees}= require('../controllers/signupController');
 const { getAllStudents}= require('../controllers/studentsController');
-const { allocateStudent,getAllocationById}= require('../controllers/allocationController');
+const { allocateStudent,getAllocationById,getStudentnameById}= require('../controllers/allocationController');
 const {gettargetStudentBYID ,targetStudent,getbaselineStudentByID,createBaseline,getConsecutiveIndependentResponses, getupdateTargetData, getMaintenanceData}= require('../controllers/notebookRoutes');
 
 const { createBehaviour,createNotes,createCommunication, createEyeCommunication}= require('../controllers/behaviourController');
@@ -43,6 +43,8 @@ router.get('/getAllEmployees', getAllEmployees );
 router.get('/getAllStudents', getAllStudents );
 router.post('/allocateStudent', allocateStudent );
 router.get('/getAllocationById', getAllocationById );
+router.get('/getStudentnameById', getStudentnameById );
+
 router.get('/targetStudentBYID', gettargetStudentBYID );
 
 router.post('/targets', targetStudent);

@@ -1,4 +1,4 @@
-const db = require('../db'); 
+const db = require('../db');
 
 // const gettargetStudentBYID = async (req, res) => {
 //     const {studentID} = req.query;
@@ -19,47 +19,53 @@ const db = require('../db');
 // };
 
 const gettargetStudentBYID = async (req, res) => {
-    const { studentID } = req.query;
-    db.query('SELECT * FROM t_ngo_target WHERE StudentID = ?', [studentID], (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json(result);
+ // const { studentID } = req.query;
+  const { studentID, empid } = req.query;
+
+  db.query(
+    //'SELECT * FROM t_ngo_target WHERE StudentID = ?', [studentID],
+    'SELECT * FROM t_ngo_target WHERE StudentID = ? AND EmpID = ?', [studentID, empid],
+    (err, result) => {
+
+      if (err) return res.status(500).send(err);
+      res.json(result);
     });
 };
 
 // ✅ Bulk Insert Target Data
 const targetStudent = async (req, res) => {
-    const { EmpID, StudentID, headers } = req.body;
+  const { EmpID, StudentID, headers } = req.body;
 
-    // Check if headers exist
-    if (!headers || headers.length === 0) {
-        return res.status(400).json({ error: 'Headers are required' });
-    }
+  // Check if headers exist
+  if (!headers || headers.length === 0) {
+    return res.status(400).json({ error: 'Headers are required' });
+  }
 
-    const sql = `INSERT INTO t_ngo_target (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+  const sql = `INSERT INTO t_ngo_target (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
 
-    const values = [];
+  const values = [];
 
-    headers.forEach(header => {
-        header.subHeaders.forEach(sub => {
-            values.push([EmpID, StudentID, header.headerName, sub.name, sub.sd, sub.prompt]);
-        });
+  headers.forEach(header => {
+    header.subHeaders.forEach(sub => {
+      values.push([EmpID, StudentID, header.headerName, sub.name, sub.sd, sub.prompt]);
     });
+  });
 
-    db.query(sql, [values], (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json({ status: 'success', inserted: result.affectedRows });
-    });
+  db.query(sql, [values], (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json({ status: 'success', inserted: result.affectedRows });
+  });
 };
 
 
 
 // ✅ Fetch Baseline Data
 const getbaselineStudentByID = async (req, res) => {
-    const { studentID } = req.query;
-    db.query('SELECT * FROM t_ngo_baseline WHERE StudentID = ?', [studentID], (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json(result);
-    });
+  const { studentID } = req.query;
+  db.query('SELECT * FROM t_ngo_baseline WHERE StudentID = ?', [studentID], (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json(result);
+  });
 };
 
 // ✅ Bulk Insert Baseline Data
@@ -88,82 +94,82 @@ const getbaselineStudentByID = async (req, res) => {
 // };
 
 const createBaseline = async (req, res) => {
-    const { EmpID, StudentID, headers } = req.body;
-  
-    if (!headers || headers.length === 0) {
-      return res.status(400).json({ error: 'Headers are required' });
+  const { EmpID, StudentID, headers } = req.body;
+
+  if (!headers || headers.length === 0) {
+    return res.status(400).json({ error: 'Headers are required' });
+  }
+
+  const baselineValues = [];
+  const targetValues = [];
+  const maintenanceValues = [];
+
+  headers.forEach(header => {
+    header.subHeaders.forEach(sub => {
+      const row = [EmpID, StudentID, header.headerName, sub.name, sub.sd, sub.prompt];
+
+      // Add to Baseline table (always)
+      baselineValues.push(row);
+
+      // Conditionally add to Target or Maintenance table
+      if (sub.prompt === "No") {
+        targetValues.push(row);
+      } else {
+        maintenanceValues.push(row);
+      }
+    });
+  });
+
+  // Insert into baseline
+  const baselineSQL = `INSERT INTO t_ngo_baseline (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+  db.query(baselineSQL, [baselineValues], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Baseline Insert Failed', details: err });
+
+    // Insert into target
+    if (targetValues.length > 0) {
+      const targetSQL = `INSERT INTO t_ngo_target (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+      db.query(targetSQL, [targetValues], (targetErr) => {
+        if (targetErr) console.error("Target Insert Failed", targetErr);
+      });
     }
-  
-    const baselineValues = [];
-    const targetValues = [];
-    const maintenanceValues = [];
-  
-    headers.forEach(header => {
-      header.subHeaders.forEach(sub => {
-        const row = [EmpID, StudentID, header.headerName, sub.name, sub.sd, sub.prompt];
-  
-        // Add to Baseline table (always)
-        baselineValues.push(row);
-  
-        // Conditionally add to Target or Maintenance table
-        if (sub.prompt === "No") {
-          targetValues.push(row);
-        } else {
-          maintenanceValues.push(row);
-        }
+
+    // Insert into maintenance
+    if (maintenanceValues.length > 0) {
+      const maintenanceSQL = `INSERT INTO t_ngo_maintainance (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
+      db.query(maintenanceSQL, [maintenanceValues], (maintErr) => {
+        if (maintErr) console.error("Maintenance Insert Failed", maintErr);
       });
+    }
+
+    res.json({
+      status: "success",
+      insertedToBaseline: result.affectedRows,
+      insertedToTarget: targetValues.length,
+      insertedToMaintenance: maintenanceValues.length
     });
-  
-    // Insert into baseline
-    const baselineSQL = `INSERT INTO t_ngo_baseline (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
-    db.query(baselineSQL, [baselineValues], (err, result) => {
-      if (err) return res.status(500).json({ error: 'Baseline Insert Failed', details: err });
-  
-      // Insert into target
-      if (targetValues.length > 0) {
-        const targetSQL = `INSERT INTO t_ngo_target (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
-        db.query(targetSQL, [targetValues], (targetErr) => {
-          if (targetErr) console.error("Target Insert Failed", targetErr);
-        });
-      }
-  
-      // Insert into maintenance
-      if (maintenanceValues.length > 0) {
-        const maintenanceSQL = `INSERT INTO t_ngo_maintainance (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt) VALUES ?`;
-        db.query(maintenanceSQL, [maintenanceValues], (maintErr) => {
-          if (maintErr) console.error("Maintenance Insert Failed", maintErr);
-        });
-      }
-  
-      res.json({
-        status: "success",
-        insertedToBaseline: result.affectedRows,
-        insertedToTarget: targetValues.length,
-        insertedToMaintenance: maintenanceValues.length
-      });
-    });
-  };
+  });
+};
 
 
-  
 
-  //get Maintainance data
 
-  const getMaintenanceData = (req, res) => {
-    const { studentId } = req.query;
-  
-    const sql = `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? ORDER BY DateTime DESC`;
-  
-    db.query(sql, [studentId], (err, result) => {
-      if (err) return res.status(500).json({ error: 'Failed to fetch maintenance data', details: err });
-      res.json(result);
-     // res.json({ status: "success", data: result });
-    });
-  };
-  
-  
+//get Maintainance data
 
-  // PUT /api/targets/:studentId
+const getMaintenanceData = (req, res) => {
+  const { studentId,empid } = req.query;
+
+  const sql = `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? AND EmpID = ? ORDER BY DateTime DESC`;
+
+  db.query(sql, [studentId,empid], (err, result) => {
+    if (err) return res.status(500).json({ error: 'Failed to fetch maintenance data', details: err });
+    res.json(result);
+    // res.json({ status: "success", data: result });
+  });
+};
+
+
+
+// PUT /api/targets/:studentId
 //router.put('/api/targets/:studentId', (req, res)
 
 // const getupdateTargetData = (req, res)=> {
@@ -294,15 +300,15 @@ const getupdateTargetData = (req, res) => {
 
 
 const getConsecutiveIndependentResponses = async (req, res) => {
-    try {
-        const { studentId } = req.query;
+  try {
+    const { studentId } = req.query;
 
-        if (!studentId) {
-            return res.status(400).json({ error: "Student ID is required" });
-        }
+    if (!studentId) {
+      return res.status(400).json({ error: "Student ID is required" });
+    }
 
-        // Query to get records from both tables with "Independent Response"
-        const sql = `
+    // Query to get records from both tables with "Independent Response"
+    const sql = `
             SELECT StudentID, HeaderName, SubHeaderName, Prompt, DATE(DateTime) as DateOnly
             FROM t_ngo_baseline 
             WHERE StudentID = ? AND Prompt = 'Independent Response'
@@ -313,67 +319,67 @@ const getConsecutiveIndependentResponses = async (req, res) => {
             ORDER BY StudentID, HeaderName, SubHeaderName, DateOnly
         `;
 
-        db.query(sql, [studentId, studentId], (err, results) => {
-            if (err) {
-                console.error(err);
-                return res.status(500).json({ error: "Database error" });
-            }
+    db.query(sql, [studentId, studentId], (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Database error" });
+      }
 
-            // Group by (HeaderName + SubHeaderName + Prompt)
-            const groupedData = {};
-            results.forEach((row) => {
-                const key = `${row.HeaderName}-${row.SubHeaderName}-${row.Prompt}`;
-                if (!groupedData[key]) {
-                    groupedData[key] = [];
-                }
-                groupedData[key].push(row.DateOnly); // Store only the date (YYYY-MM-DD)
-            });
+      // Group by (HeaderName + SubHeaderName + Prompt)
+      const groupedData = {};
+      results.forEach((row) => {
+        const key = `${row.HeaderName}-${row.SubHeaderName}-${row.Prompt}`;
+        if (!groupedData[key]) {
+          groupedData[key] = [];
+        }
+        groupedData[key].push(row.DateOnly); // Store only the date (YYYY-MM-DD)
+      });
 
-            console.log("Grouped Data--->", groupedData); // Debugging
+      console.log("Grouped Data--->", groupedData); // Debugging
 
-            // Function to check for 3 consecutive dates
-            const isThreeConsecutiveDays = (dates) => {
-                if (dates.length < 3) return false;
+      // Function to check for 3 consecutive dates
+      const isThreeConsecutiveDays = (dates) => {
+        if (dates.length < 3) return false;
 
-                // Convert dates to YYYY-MM-DD format and sort them
-                const sortedDates = [...new Set(dates)] // Remove duplicates
-                    .map(date => new Date(date)) // Convert to Date objects
-                    .sort((a, b) => a - b); // Sort in ascending order
+        // Convert dates to YYYY-MM-DD format and sort them
+        const sortedDates = [...new Set(dates)] // Remove duplicates
+          .map(date => new Date(date)) // Convert to Date objects
+          .sort((a, b) => a - b); // Sort in ascending order
 
-                for (let i = 0; i <= sortedDates.length - 3; i++) {
-                    const day1 = sortedDates[i];
-                    const day2 = sortedDates[i + 1];
-                    const day3 = sortedDates[i + 2];
+        for (let i = 0; i <= sortedDates.length - 3; i++) {
+          const day1 = sortedDates[i];
+          const day2 = sortedDates[i + 1];
+          const day3 = sortedDates[i + 2];
 
-                    // Check if they are consecutive (difference = 1 day)
-                    if (
-                        (day2 - day1 === 86400000) && // Day 2 is exactly 1 day after Day 1
-                        (day3 - day2 === 86400000)    // Day 3 is exactly 1 day after Day 2
-                    ) {
-                        return true;
-                    }
-                }
-                return false;
-            };
+          // Check if they are consecutive (difference = 1 day)
+          if (
+            (day2 - day1 === 86400000) && // Day 2 is exactly 1 day after Day 1
+            (day3 - day2 === 86400000)    // Day 3 is exactly 1 day after Day 2
+          ) {
+            return true;
+          }
+        }
+        return false;
+      };
 
-            // Filter tasks that appear for 3 consecutive days
-            const filteredTasks = Object.keys(groupedData)
-                .filter((key) => isThreeConsecutiveDays(groupedData[key]))
-                .map((key) => {
-                    const [HeaderName, SubHeaderName, Prompt] = key.split("-");
-                    return { StudentID: studentId, HeaderName, SubHeaderName, Prompt };
-                });
-
-            res.json(filteredTasks);
+      // Filter tasks that appear for 3 consecutive days
+      const filteredTasks = Object.keys(groupedData)
+        .filter((key) => isThreeConsecutiveDays(groupedData[key]))
+        .map((key) => {
+          const [HeaderName, SubHeaderName, Prompt] = key.split("-");
+          return { StudentID: studentId, HeaderName, SubHeaderName, Prompt };
         });
 
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Server error" });
-    }
+      res.json(filteredTasks);
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
 };
 
 
 
-module.exports = {gettargetStudentBYID, targetStudent, getbaselineStudentByID, createBaseline, getupdateTargetData,getConsecutiveIndependentResponses, getMaintenanceData};
+module.exports = { gettargetStudentBYID, targetStudent, getbaselineStudentByID, createBaseline, getupdateTargetData, getConsecutiveIndependentResponses, getMaintenanceData };
 

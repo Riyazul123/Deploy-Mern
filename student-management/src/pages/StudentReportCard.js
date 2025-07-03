@@ -389,7 +389,7 @@ const StudentReportCard = () => {
   const [loading, setLoading] = useState(false);
   const baseUrl = process.env.REACT_APP_SERVER_URL;
   const reportRef = useRef();
-
+  const [studentName, setStudentName] = useState(""); // "" → shows "Loading..."
   const fetchReport = async () => {
     setLoading(true);
     try {
@@ -409,6 +409,7 @@ const StudentReportCard = () => {
     }
   };
 
+
   const downloadPDF = () => {
     const element = reportRef.current;
     const opt = {
@@ -420,7 +421,27 @@ const StudentReportCard = () => {
     };
     html2pdf().from(element).set(opt).save();
   };
+useEffect(() => {
+    if (!inputStudentID) return;                     // Skip if ID missing
 
+    const fetchStudentName = async () => {
+      try {
+        /* Axios builds →  /api/getStudentnameById?student_id=2025-1001 */
+        const { data } = await axios.get(`${baseUrl}/api/getStudentnameById`, {
+          params: { student_id: inputStudentID },
+        });
+
+        // API returns an array; pick the first row if present
+        const name = data?.[0]?.student_name || "Unknown";
+        setStudentName(name);
+      } catch (err) {
+        console.error("Error fetching student name:", err);
+        setStudentName("Error");
+      }
+    };
+
+    fetchStudentName();
+  }, [inputStudentID])
   return (
     <>
       <TeacherNavbarScreen />
@@ -540,7 +561,7 @@ const StudentReportCard = () => {
                       Student Name
                     </Typography>
                     <Typography variant="h6" fontWeight="bold">
-                      {reportData.studentName}
+                      {studentName}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} md={4}>

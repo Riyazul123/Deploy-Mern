@@ -126,6 +126,58 @@
 const db = require('../db');
 const moment = require('moment');
 
+// const getStudentReport = (req, res) => {
+//   const { studentID, fromDate, toDate } = req.query;
+
+//   if (!studentID || !fromDate || !toDate) {
+//     return res.status(400).json({ message: "studentID, fromDate, and toDate are required" });
+//   }
+
+//   const formattedStart = moment(fromDate).format('YYYY-MM-DD HH:mm:ss');
+//   const formattedEnd = moment(toDate).format('YYYY-MM-DD HH:mm:ss');
+
+//   // const queries = {
+//   //   baseline: `SELECT * FROM t_ngo_baseline WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+//   //   target: `SELECT * FROM t_ngo_target WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+//   //   maintenance: `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+//   //   communication: `SELECT * FROM t_ngo_communication WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+//   //   behavior: `SELECT * FROM t_ngo_behaviour WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
+//   //   notes: `SELECT * FROM t_ngo_notes WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`
+//   // };
+//   const queries = {
+//   baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//   target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//   maintenance:   'SELECT * FROM t_ngo_maintainance   WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//   communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//   behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+//   notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
+// };
+
+
+//   const data = {};
+//   let completed = 0;
+//   const total = Object.keys(queries).length;
+
+//   for (let key in queries) {
+//     db.query(queries[key], [studentID, formattedStart, formattedEnd], (err, result) => {
+//       if (err) {
+//     console.error(`Error fetching ${key}:`, err); // 👈 full error object
+//     return res.status(500).json({ message: `Error fetching ${key}`, error: err.sqlMessage || err.message });
+//       }
+
+//       data[key] = result;
+//       completed++;
+
+//       if (completed === total) {
+//         res.status(200).json({
+//           studentID,
+//           period: { start: formattedStart, end: formattedEnd },
+//           ...data
+//         });
+//       }
+//     });
+//   }
+// };
 const getStudentReport = (req, res) => {
   const { studentID, fromDate, toDate } = req.query;
 
@@ -133,26 +185,18 @@ const getStudentReport = (req, res) => {
     return res.status(400).json({ message: "studentID, fromDate, and toDate are required" });
   }
 
-  const formattedStart = moment(fromDate).format('YYYY-MM-DD HH:mm:ss');
-  const formattedEnd = moment(toDate).format('YYYY-MM-DD HH:mm:ss');
+  // Cover entire date range
+  const formattedStart = moment(fromDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
+  const formattedEnd = moment(toDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
 
-  // const queries = {
-  //   baseline: `SELECT * FROM t_ngo_baseline WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-  //   target: `SELECT * FROM t_ngo_target WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-  //   maintenance: `SELECT * FROM t_ngo_maintainance WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-  //   communication: `SELECT * FROM t_ngo_communication WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-  //   behavior: `SELECT * FROM t_ngo_behaviour WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`,
-  //   notes: `SELECT * FROM t_ngo_notes WHERE StudentID = ? AND DateTime BETWEEN ? AND ?`
-  // };
   const queries = {
-  baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-  target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-  maintenance:   'SELECT * FROM t_ngo_maintainance   WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-  communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-  behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
-  notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
-};
-
+    baseline:      'SELECT * FROM t_ngo_baseline      WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+    target:        'SELECT * FROM t_ngo_target        WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+    maintenance:   'SELECT * FROM t_ngo_maintainance  WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+    communication: 'SELECT * FROM t_ngo_communication WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+    behavior:      'SELECT * FROM t_ngo_behaviour     WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?',
+    notes:         'SELECT * FROM t_ngo_notes         WHERE StudentID = ? AND `DateTime` BETWEEN ? AND ?'
+  };
 
   const data = {};
   let completed = 0;
@@ -161,8 +205,8 @@ const getStudentReport = (req, res) => {
   for (let key in queries) {
     db.query(queries[key], [studentID, formattedStart, formattedEnd], (err, result) => {
       if (err) {
-    console.error(`Error fetching ${key}:`, err); // 👈 full error object
-    return res.status(500).json({ message: `Error fetching ${key}`, error: err.sqlMessage || err.message });
+        console.error(`Error fetching ${key}:`, err);
+        return res.status(500).json({ message: `Error fetching ${key}`, error: err.sqlMessage || err.message });
       }
 
       data[key] = result;
@@ -178,5 +222,6 @@ const getStudentReport = (req, res) => {
     });
   }
 };
+
 
 module.exports = { getStudentReport };

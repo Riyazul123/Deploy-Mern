@@ -154,4 +154,29 @@ const getAllocationById = async (req, res) => {
 
 
 
-module.exports = { allocateStudent , getAllocationById};
+const getStudentnameById = async (req, res) => {
+    try {
+        const { student_id } = req.query; // Expecting an array of students
+
+        if (!student_id) {
+            return res.status(400).json({ message: "Teacher ID  required" });
+        }
+
+        const query = `
+            SELECT student_id , student_name from t_ngo_teacher_student_allocation 
+            WHERE student_id = ?
+        `;
+
+      
+        db.query(query, [student_id], (err, result) => {
+         if (err) return res.status(500).json({ message: "Database error", error: err });
+        res.json(result); 
+        });
+
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+};
+
+
+module.exports = { allocateStudent , getAllocationById,getStudentnameById};
