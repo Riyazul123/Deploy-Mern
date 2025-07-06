@@ -294,20 +294,43 @@ const updateStudent = async (req, res) => {
 /* --------------------------------------------------------- */
 /* 4. Search students for fees page                           */
 /* --------------------------------------------------------- */
+// const feesStudents = async (req, res) => {
+//   try {
+//     const { search } = req.query;
+//     const [rows] = await db.execute(
+//       `SELECT * FROM students
+//         WHERE enrollment_id = ? OR student_name LIKE ?`,
+//       [search, `%${search}%`]
+//     );
+//     return res.json(rows);
+//   } catch (err) {
+//     console.error("feesStudents error:", err);
+//     return res.status(500).json({ error: err.message });
+//   }
+// };
 const feesStudents = async (req, res) => {
   try {
-    const { search } = req.query;
-    const [rows] = await db.execute(
-      `SELECT * FROM students
-        WHERE enrollment_id = ? OR student_name LIKE ?`,
-      [search, `%${search}%`]
-    );
-    return res.json(rows);
+    const { search = "" } = req.query;
+    const like = `%${search}%`;
+
+    const sql = `
+      SELECT *
+      FROM students
+      WHERE enrollment_id = ?
+         OR student_name LIKE ?
+    `;
+
+    // 👇 use query() not execute()
+    const [rows] = await db.query(sql, [search, like]);
+
+    res.json(rows);
   } catch (err) {
     console.error("feesStudents error:", err);
-    return res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
+
+
 
 // //-------------------------Start mysql api-=----------------------------
 // const createFeeEntry = (req, res) => {
@@ -876,30 +899,78 @@ const calculateMonthlyIncomeExpense = async (req, res) => {
     const expenseData = expenseResult[0];
     const feesIncomeData = feesResult[0];
 
-    const incomeRows = [
-      ...incomeData.map(entry => ({
-        date: formatDate(new Date(entry.date_of_inexp)),
-        incomeHead: entry.inExp_details || "N/A",
-        receivedFrom: entry.rec_send_name || "N/A",
-        amount: parseFloat(entry.amt_paid).toFixed(2),
-        paymentDetails: entry.payment_details || "00"
-      })),
-      ...feesIncomeData.map(fees => ({
-        date: formatDate(new Date(fees.fees_for_month)),
-        incomeHead: "Tuition Fees",
-        receivedFrom: fees.student_enrollment_id,
-        amount: parseFloat(fees.total_paid_amt).toFixed(2),
-        paymentDetails: fees.payment_details || "00"
-      }))
-    ];
+    // const incomeRows = [
+    //   ...incomeData.map(entry => ({
+    //     date: formatDate(new Date(entry.date_of_inexp)),
+    //     incomeHead: entry.inExp_details || "N/A",
+    //     receivedFrom: entry.rec_send_name || "N/A",
+    //     amount: parseFloat(entry.amt_paid).toFixed(2),
+    //     paymentDetails: entry.payment_details || "00"
+    //   })),
+    //   ...feesIncomeData.map(fees => ({
+    //     date: formatDate(new Date(fees.fees_for_month)),
+    //     incomeHead: "Tuition Fees",
+    //     receivedFrom: fees.student_enrollment_id,
+    //     amount: parseFloat(fees.total_paid_amt).toFixed(2),
+    //     paymentDetails: fees.payment_details || "00"
+    //   }))
+    // ];
 
-    const expenseRows = expenseData.map(entry => ({
-      date: formatDate(new Date(entry.date_of_inexp)),
-      expensesHead: entry.inExp_details || "N/A",
-      paymentTo: entry.rec_send_name || "N/A",
+    // const expenseRows = expenseData.map(entry => ({
+       
+
+    //   date: formatDate(new Date(entry.date_of_inexp)),
+    //   expensesHead: entry.inExp_details || "N/A",
+    //   paymentTo: entry.rec_send_name || "N/A",
+    //   amount: parseFloat(entry.amt_paid).toFixed(2),
+    //   paymentDetails: entry.payment_details || "00"
+    // }));
+
+const incomeRows = [
+  ...incomeData.map(entry => {
+    const raw = new Date(entry.date_of_inexp);
+    return {
+      _rawDate: raw,                              // <-- keep raw
+      date: formatDate(raw),
+      incomeHead: entry.inExp_details || "N/A",
+      receivedFrom: entry.rec_send_name || "N/A",
       amount: parseFloat(entry.amt_paid).toFixed(2),
       paymentDetails: entry.payment_details || "00"
-    }));
+    };
+  }),
+  ...feesIncomeData.map(fees => {
+    const raw = new Date(fees.fees_for_month);
+    return {
+      _rawDate: raw,
+      date: formatDate(raw),
+      incomeHead: "Tuition Fees",
+      receivedFrom: fees.student_enrollment_id,
+      amount: parseFloat(fees.total_paid_amt).toFixed(2),
+      paymentDetails: fees.payment_details || "00"
+    };
+  })
+];
+
+const expenseRows = expenseData.map(entry => {
+  const raw = new Date(entry.date_of_inexp);
+  return {
+    _rawDate: raw,
+    date: formatDate(raw),
+    expensesHead: entry.inExp_details || "N/A",
+    paymentTo: entry.rec_send_name || "N/A",
+    amount: parseFloat(entry.amt_paid).toFixed(2),
+    paymentDetails: entry.payment_details || "00"
+  };
+});
+
+// 1. Sort by _rawDate
+incomeRows.sort((a, b) => a._rawDate - b._rawDate);
+expenseRows.sort((a, b) => a._rawDate - b._rawDate);
+
+// 2. Drop the helper field before replying (optional but tidy)
+incomeRows.forEach(row => delete row._rawDate);
+expenseRows.forEach(row => delete row._rawDate);
+
 
     const totalIncome = incomeRows.reduce((sum, row) => sum + parseFloat(row.amount), 0);
     const totalExpense = expenseRows.reduce((sum, row) => sum + parseFloat(row.amount), 0);
