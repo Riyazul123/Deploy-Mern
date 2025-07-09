@@ -132,6 +132,15 @@ const StudentEnrollment = () => {
             console.error('Error:', error);
         }
     };
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).replace(/ /g, '-');
+};
 
 
     return (
@@ -274,7 +283,7 @@ const StudentEnrollment = () => {
                                     enrolledStudents.map((student, index) => (
                                         <TableRow key={index}>
                                             <TableCell>{student.enrollment_id}</TableCell>
-                                            <TableCell>{student.student_dob}</TableCell>
+                                            <TableCell>{formatDate(student.student_dob)}</TableCell>
                                             <TableCell>{student.student_name}</TableCell>
                                             <TableCell>{student.fathers_name}</TableCell>
                                             <TableCell>{student.mothers_name}</TableCell>
@@ -283,7 +292,7 @@ const StudentEnrollment = () => {
                                             <TableCell>{student.alternative_email_id}</TableCell>
                                             <TableCell>{student.alternative_contact_no}</TableCell>
                                             <TableCell>{student.fees}</TableCell>
-                                            <TableCell>{student.date_of_admission}</TableCell>
+                                            <TableCell>{formatDate(student.date_of_admission)}</TableCell>
                                             <TableCell>{student.no_of_days}</TableCell>
                                             <TableCell>{student.student_type}</TableCell>
                                             <TableCell>

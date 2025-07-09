@@ -731,7 +731,7 @@ const getPaymentSlip = async (req, res) => {
     const searchVal = `%${search}%`;
 
     /* 1️⃣  fetch matching students */
-    const [students] = await db.execute(searchSql, [searchVal, searchVal]);
+    const [students] = await db.query(searchSql, [searchVal, searchVal]);
     if (students.length === 0) {
       return res.status(404).json({ message: "No students found" });
     }
