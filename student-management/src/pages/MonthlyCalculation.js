@@ -270,31 +270,31 @@ const MonthlyCalculationForm = () => {
       [name]: value,
     });
   };
-const formatDate = (dateStr) => {
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const formatDate = (dateStr) => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-  const parts = dateStr.split('-');
-  if (parts.length !== 3) return 'Invalid-Date';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return 'Invalid-Date';
 
-  const [day, month, year] = parts.map(p => p.trim());
+    const [day, month, year] = parts.map(p => p.trim());
 
-  const monthIndex = parseInt(month, 10) - 1;
-  const monthName = months[monthIndex];
-  const paddedDay = day.padStart(2, '0');
+    const monthIndex = parseInt(month, 10) - 1;
+    const monthName = months[monthIndex];
+    const paddedDay = day.padStart(2, '0');
 
-  if (!monthName || isNaN(paddedDay) || isNaN(year)) return 'Invalid-Date';
+    if (!monthName || isNaN(paddedDay) || isNaN(year)) return 'Invalid-Date';
 
-  return `${paddedDay}-${monthName}-${year}`;
-};
+    return `${paddedDay}-${monthName}-${year}`;
+  };
 
 
 
 
   const handleSubmit = async () => {
-    setLoading(true); 
+    setLoading(true);
     try {
-      const response = await axios.post(baseUrl+'/api/calculate-income-expense', formData);
+      const response = await axios.post(baseUrl + '/api/calculate-income-expense', formData);
       setResult(response.data);
       setError(null);
     } catch (err) {
@@ -305,35 +305,79 @@ const formatDate = (dateStr) => {
     }
   };
   // Export to Excel
+  // const handleExportToExcel = () => {
+  //   setLoading(true); 
+  //   try{
+
+
+  //   const incomeSheet = XLSX.utils.json_to_sheet(result.incomeRows);
+  //   const expenseSheet = XLSX.utils.json_to_sheet(result.expenseRows);
+
+  //   const workbook = XLSX.utils.book_new();
+  //   XLSX.utils.book_append_sheet(workbook, incomeSheet, 'Income');
+  //   XLSX.utils.book_append_sheet(workbook, expenseSheet, 'Expenses');
+
+  //   // Add summary as a separate sheet
+  //   const summary = [
+  //     { Metric: 'Total Income', Amount: result.totalIncome },
+  //     { Metric: 'Total Expense', Amount: result.totalExpense },
+  //   ];
+  //   const summarySheet = XLSX.utils.json_to_sheet(summary);
+  //   XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+  //   // Save the workbook
+  //   XLSX.writeFile(workbook, `Monthly_Calculation_${formData.fromDate}_to_${formData.toDate}.xlsx`);
+  // }catch (err) {
+  //     setError('Error fetching data. Please try again.');
+  //   }
+  //   finally {
+  //     setLoading(false); // Stop the loader
+  //   }
+
+  // };
   const handleExportToExcel = () => {
-    setLoading(true); 
-    try{
+    setLoading(true);
+    try {
+      // Format income rows
+      const formattedIncomeRows = result.incomeRows.map(row => ({
+        Date: formatDate(row.date),
+        'Income Head': row.incomeHead,
+        'Received From': row.receivedFrom,
+        'Transaction Details': row.paymentDetails,
+        Amount: row.amount,
+      }));
 
-   
-    const incomeSheet = XLSX.utils.json_to_sheet(result.incomeRows);
-    const expenseSheet = XLSX.utils.json_to_sheet(result.expenseRows);
+      // Format expense rows
+      const formattedExpenseRows = result.expenseRows.map(row => ({
+        Date: formatDate(row.date),
+        'Expenses Head': row.expensesHead,
+        'Payment To': row.paymentTo,
+        'Transaction Details': row.paymentDetails,
+        Amount: row.amount,
+      }));
 
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, incomeSheet, 'Income');
-    XLSX.utils.book_append_sheet(workbook, expenseSheet, 'Expenses');
+      const incomeSheet = XLSX.utils.json_to_sheet(formattedIncomeRows);
+      const expenseSheet = XLSX.utils.json_to_sheet(formattedExpenseRows);
 
-    // Add summary as a separate sheet
-    const summary = [
-      { Metric: 'Total Income', Amount: result.totalIncome },
-      { Metric: 'Total Expense', Amount: result.totalExpense },
-    ];
-    const summarySheet = XLSX.utils.json_to_sheet(summary);
-    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, incomeSheet, 'Income');
+      XLSX.utils.book_append_sheet(workbook, expenseSheet, 'Expenses');
 
-    // Save the workbook
-    XLSX.writeFile(workbook, `Monthly_Calculation_${formData.fromDate}_to_${formData.toDate}.xlsx`);
-  }catch (err) {
-      setError('Error fetching data. Please try again.');
+      // Add summary sheet
+      const summary = [
+        { Metric: 'Total Income', Amount: result.totalIncome },
+        { Metric: 'Total Expense', Amount: result.totalExpense },
+      ];
+      const summarySheet = XLSX.utils.json_to_sheet(summary);
+      XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary');
+
+      // Write the workbook
+      XLSX.writeFile(workbook, `Monthly_Calculation_${formData.fromDate}_to_${formData.toDate}.xlsx`);
+    } catch (err) {
+      setError('Error exporting data. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    finally {
-      setLoading(false); // Stop the loader
-    }
-  
   };
 
 
@@ -366,11 +410,11 @@ const formatDate = (dateStr) => {
                   InputLabelProps={{ shrink: true }}
                 />
                 <StyledButton variant="contained" onClick={handleSubmit}>
-                   {loading ? 'Wait...' : 'Calculate'}
+                  {loading ? 'Wait...' : 'Calculate'}
                 </StyledButton>
               </StyledForm>
 
-              {result && (
+              {/* {result && (
                 <Box sx={{ mt: 4 }}>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
                     Income and Expense Details
@@ -397,7 +441,7 @@ const formatDate = (dateStr) => {
                       <TableBody>
                         {(result.incomeRows || []).map((row, index) => (
                           <TableRow key={`income-${index}`}>
-                            {/* <TableCell>{row.date}</TableCell> */}
+              
                             <TableCell>{formatDate(row.date)}</TableCell>
                             <TableCell>{row.incomeHead}</TableCell>
                             <TableCell>{row.receivedFrom}</TableCell>
@@ -418,7 +462,7 @@ const formatDate = (dateStr) => {
                             <TableCell />
                             <TableCell />
                             <TableCell />
-                            {/* <TableCell>{row.date}</TableCell> */}
+                      
                             <TableCell>{formatDate(row.date)}</TableCell>
                             <TableCell>{row.expensesHead}</TableCell>
                             <TableCell>{row.paymentTo}</TableCell>
@@ -441,7 +485,119 @@ const formatDate = (dateStr) => {
                     </Table>
                   </TableContainer>
                 </Box>
+              )} */}
+
+              {result && (
+                <Box sx={{ mt: 4 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
+                    Income and Expense Details
+                  </Typography>
+
+                  <Box
+
+                    sx={{
+                      display: 'flex',
+                      flexDirection: {
+                        xs: 'column', // mobile
+                        sm: 'row',    // tablet and up
+                      },
+                      gap: 2,
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    {/* Income Table */}
+                    <TableContainer
+                      component={Paper}
+                      sx={{
+                        flex: 1,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        backgroundColor: '#e8f5e9', // light green
+                      }}
+                    >
+                      <Typography variant="subtitle1" sx={{ px: 2, pt: 2, fontWeight: 'bold', color: 'green' }}>
+                        Income
+                      </Typography>
+                      <Table>
+                        <TableHead sx={{ backgroundColor: '#c8e6c9' }}>
+                          <TableRow>
+                            <StyledTableCell>Date</StyledTableCell>
+                            <StyledTableCell>Income Head</StyledTableCell>
+                            <StyledTableCell>Received From</StyledTableCell>
+                            <StyledTableCell>Transaction Details</StyledTableCell>
+                            <StyledTableCell>Amount</StyledTableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {(result.incomeRows || []).map((row, index) => (
+                            <TableRow key={`income-${index}`}>
+                              <TableCell>{formatDate(row.date)}</TableCell>
+                              <TableCell>{row.incomeHead}</TableCell>
+                              <TableCell>{row.receivedFrom}</TableCell>
+                              <TableCell>{row.paymentDetails}</TableCell>
+                              <TableCell>{row.amount}</TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell colSpan={4} sx={{ fontWeight: 'bold' }}>
+                              Total Income
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{result.totalIncome}</TableCell>
+
+
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+
+                    {/* Expense Table */}
+                    <TableContainer
+                      component={Paper}
+                      sx={{
+                        flex: 1,
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        backgroundColor: '#ffebee', // light red
+                      }}
+                    >
+                      <Typography variant="subtitle1" sx={{ px: 2, pt: 2, fontWeight: 'bold', color: 'red' }}>
+                        Expenses
+                      </Typography>
+                      <Table>
+                        <TableHead sx={{ backgroundColor: '#ffcdd2' }}>
+                          <TableRow>
+                            <StyledTableCell>Date</StyledTableCell>
+                            <StyledTableCell>Expenses Head</StyledTableCell>
+                            <StyledTableCell>Payment To</StyledTableCell>
+                            <StyledTableCell>Transaction Details</StyledTableCell>
+                            <StyledTableCell>Amount</StyledTableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
+                          {(result.expenseRows || []).map((row, index) => (
+                            <TableRow key={`expense-${index}`}>
+                              <TableCell>{formatDate(row.date)}</TableCell>
+                              <TableCell>{row.expensesHead}</TableCell>
+                              <TableCell>{row.paymentTo}</TableCell>
+                              <TableCell>{row.paymentDetails}</TableCell>
+                              <TableCell>{row.amount}</TableCell>
+                            </TableRow>
+                          ))}
+                          <TableRow>
+                            <TableCell colSpan={4} sx={{ fontWeight: 'bold' }}>
+                              Total Expense
+                            </TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>{result.totalExpense}</TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </Box>
+
+
+                </Box>
               )}
+
 
               {result.incomeRows.length === 0 && result.expenseRows.length === 0 && (
                 <Typography sx={{ mt: 2, color: '#888' }}>No data available for the selected date range.</Typography>
@@ -455,7 +611,7 @@ const formatDate = (dateStr) => {
 
               {result.incomeRows.length > 0 || result.expenseRows.length > 0 ? (
                 <StyledButton variant="contained" sx={{ mt: 2 }} onClick={handleExportToExcel}>
-                   {loading ? 'Wait...' : 'Download Excel'}
+                  {loading ? 'Wait...' : 'Download Excel'}
                 </StyledButton>
               ) : null}
 
