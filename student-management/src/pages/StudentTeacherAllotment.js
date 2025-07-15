@@ -339,11 +339,11 @@ const handleAddTeacher = async () => {
         <RadioGroup value={selectedTeacher} onChange={(e) => handleTeacherSelect(e.target.value)}>
           <Grid container spacing={2}>
             {teachers.map((teacher) => (
-              <Grid item xs={12} sm={6} key={teacher.empID}>
+              <Grid item xs={12} sm={6} key={teacher.EmpID}>
                 <FormControlLabel
-                  value={teacher.empID}
+                  value={teacher.EmpID}
                   control={<Radio color="primary" />}
-                  label={<Typography variant="body1">{teacher.empName} (ID: {teacher.empID})</Typography>}
+                  label={<Typography variant="body1">{teacher.EmpName} (ID: {teacher.EmpID})</Typography>}
                   sx={{
                     bgcolor: "#ffffff",
                     p: 2,
