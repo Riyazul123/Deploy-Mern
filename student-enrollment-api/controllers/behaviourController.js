@@ -258,7 +258,7 @@ const createEyeCommunication = async (req, res) => {
       `SELECT 1 FROM t_ngo_communication
         WHERE studentID = ? AND CommunicationType = ?`;
 
-    const [[exists]] = await db.execute(checkSql, [studentID, CommunicationType]);
+    const [[exists]] = await db.query(checkSql, [studentID, CommunicationType]);
 
     if (exists) {
       /* update existing */
@@ -267,7 +267,7 @@ const createEyeCommunication = async (req, res) => {
             SET Prompted = ?, Independent = ?, DateTime = CURRENT_TIMESTAMP
           WHERE studentID = ? AND CommunicationType = ?`;
 
-      await db.execute(updateSql, [Prompted, Independent, studentID, CommunicationType]);
+      await db.query(updateSql, [Prompted, Independent, studentID, CommunicationType]);
 
       return res.status(200).json({ message: "Communication record updated successfully!" });
     }

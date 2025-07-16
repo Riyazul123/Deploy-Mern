@@ -383,6 +383,7 @@ const TableSection = ({ title, columns, data }) => (
 
 const StudentReportCard = () => {
   const [inputStudentID, setInputStudentID] = useState('');
+  const empid = localStorage.getItem('empId')
   const [inputFromDate, setInputFromDate] = useState('');
   const [inputToDate, setInputToDate] = useState('');
   const [reportData, setReportData] = useState(null);
@@ -390,6 +391,14 @@ const StudentReportCard = () => {
   const baseUrl = process.env.REACT_APP_SERVER_URL;
   const reportRef = useRef();
   const [studentName, setStudentName] = useState(""); // "" → shows "Loading..."
+  useEffect(() => {
+
+    console.log("empid----> ",empid)
+
+   
+  }, []);
+
+
   const fetchReport = async () => {
     fetchStudentName()
     setLoading(true);
@@ -397,8 +406,10 @@ const StudentReportCard = () => {
       const res = await axios.get(`${baseUrl}/api/getStudentReport`, {
         params: {
           studentID: inputStudentID,
+          empid: empid,
           fromDate: inputFromDate,
           toDate: inputToDate,
+          
         },
       });
       setReportData(res.data);
