@@ -121,9 +121,11 @@ const StudentEnrollment = () => {
 
             const data = await response.json();
             if (response.ok) {
-                setEnrolledStudents((prev) =>
-                    prev.map((student) => (student._id === selectedStudent._id ? data.student : student))
-                );
+
+                alert('Student updated successfully');
+                // setEnrolledStudents((prev) =>
+                //     prev.map((student) => (student._id === selectedStudent._id ? data.student : student))
+                // );
                 setSelectedStudent(null);
             } else {
                 console.error('Error updating student:', data.message);

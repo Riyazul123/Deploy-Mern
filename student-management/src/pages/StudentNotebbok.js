@@ -54,7 +54,7 @@ import NavbarScreen from "./Navbar";
 const headerOptions = ["Personal", "Social", "Academic", "ReCreational", "Computer", "Self Help", "Vocational"];
 // const promptOptions = ["Full Physical", "Light Touch", "Gesture", "Model", "Shadow", "Independent Response", "Vocal Prompt", "Partial Vocal"];
 const promptOptions = ["Independent Response", "No"];
-const targetpromptOptions = ["Full Physical", "Light Touch", "Gesture", "Model", "Shadow", "Vocal Prompt", "Partial Vocal","Vocal + Gesture", "No", "Independent Response"];
+const targetpromptOptions = ["Full Physical", "Light Touch", "Gesture", "Model", "Shadow", "Vocal Prompt", "Partial Vocal","Vocal + Gesture", "No", "Independent Response","Not Attempted"];
 
 
 

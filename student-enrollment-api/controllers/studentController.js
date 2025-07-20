@@ -179,7 +179,7 @@ const enrollStudent = async (req, res) => {
 
     /* 2️⃣  generate enrollment_id */
     const admissionYear = new Date(date_of_admission).getFullYear();
-    const [last] = await db.execute(
+    const [last] = await db.query(
       `SELECT enrollment_id
          FROM students
         WHERE enrollment_id LIKE ?
@@ -239,19 +239,38 @@ const enrollStudent = async (req, res) => {
 /* --------------------------------------------------------- */
 /* 2. Get students between two admission dates                */
 /* --------------------------------------------------------- */
+// const getStudents = async (req, res) => {
+//   try {
+//     const { start_date, end_date } = req.query;
+//     const [rows] = await db.query(
+//       "SELECT * FROM students WHERE date_of_admission BETWEEN ? AND ?",
+//       [start_date, end_date]
+//     );
+//     return res.json(rows);
+//   } catch (err) {
+//     console.error("getStudents error:", err);
+//     return res.status(500).json({ error: err.message });
+//   }
+// };
+
 const getStudents = async (req, res) => {
   try {
     const { start_date, end_date } = req.query;
-    const [rows] = await db.execute(
-      "SELECT * FROM students WHERE date_of_admission BETWEEN ? AND ?",
+
+    const [rows] = await db.query(
+      `SELECT * FROM students 
+       WHERE STR_TO_DATE(date_of_admission, '%Y-%m-%d') 
+       BETWEEN STR_TO_DATE(?, '%Y-%m-%d') AND STR_TO_DATE(?, '%Y-%m-%d')`,
       [start_date, end_date]
     );
+
     return res.json(rows);
   } catch (err) {
     console.error("getStudents error:", err);
     return res.status(500).json({ error: err.message });
   }
 };
+
 
 /* --------------------------------------------------------- */
 /* 3. Update student                                          */
@@ -262,20 +281,23 @@ const updateStudent = async (req, res) => {
     const data   = { ...req.body };
 
     /* Convert dd-mm-yyyy → yyyy-mm-dd if needed */
-    if (data.student_dob?.includes("-")) {
-      const dobParts   = data.student_dob.split("-");
-      const admisParts = data.date_of_admission?.split("-");
-      if (dobParts.length === 3) {
-        data.student_dob = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
-      }
-      if (admisParts?.length === 3) {
-        data.date_of_admission = `${admisParts[2]}-${admisParts[1]}-${admisParts[0]}`;
-      }
-    }
+    // if (data.student_dob?.includes("-")) {
+    //   const dobParts   = data.student_dob.split("-");
+    //   const admisParts = data.date_of_admission?.split("-");
+    //   if (dobParts.length === 3) {
+    //     data.student_dob = `${dobParts[2]}-${dobParts[1]}-${dobParts[0]}`;
+    //   }
+    //   if (admisParts?.length === 3) {
+    //     data.date_of_admission = `${admisParts[2]}-${admisParts[1]}-${admisParts[0]}`;
+    //   }
+    // }
+
+
+    // console.log("")
     data.updatedAt = new Date();
 
     /* mysql2 supports object‑literal SET syntax */
-    const [result] = await db.query("UPDATE students SET ? WHERE id = ?", [
+    const [result] = await db.query("UPDATE students SET ? WHERE _id = ?", [
       data,
       id,
     ]);
