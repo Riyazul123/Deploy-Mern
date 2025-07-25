@@ -310,13 +310,18 @@ const createCommunication = async (req, res) => {
         });
       }
 
-      const [[exists]] = await db.execute(
+      const [[exists]] = await db.query(
         `SELECT 1 FROM t_ngo_communication WHERE studentID = ? AND CommunicationType = ?`,
         [rollNumber, type]
       );
 
+
+ 
+
+
+
       if (exists) {
-        await db.execute(
+        await db.query(
           `UPDATE t_ngo_communication
               SET Prompted = ?, Independent = ?, DateTime = CURRENT_TIMESTAMP
             WHERE studentID = ? AND CommunicationType = ?`,
