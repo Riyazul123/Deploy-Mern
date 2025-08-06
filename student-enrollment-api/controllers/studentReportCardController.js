@@ -327,8 +327,9 @@ const getStudentReport = async (req, res) => {
     target:        "SELECT * FROM t_ngo_target        WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?",
     maintenance:   "SELECT * FROM t_ngo_maintainance  WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?",
     communication: "SELECT * FROM t_ngo_communication WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?",
-    behavior:      "SELECT * FROM t_ngo_behaviour     WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?",
-    notes:         "SELECT * FROM t_ngo_notes         WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?"
+   // behavior:      "SELECT * FROM t_ngo_behaviour     WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?",
+    behavior: "SELECT * FROM t_ngo_behaviour WHERE StudentID = ? AND EmpID = ? AND STR_TO_DATE(DateTime, '%Y-%m-%d') BETWEEN STR_TO_DATE(?, '%Y-%m-%d') AND STR_TO_DATE(?, '%Y-%m-%d')",
+   notes:         "SELECT * FROM t_ngo_notes         WHERE StudentID=? AND EmpID=? AND DateTime BETWEEN ? AND ?"
   };
 
   try {
