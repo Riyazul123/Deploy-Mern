@@ -345,6 +345,68 @@ const getMaintenanceData = async (req, res) => {
 /* ------------------------------------------------------------- */
 /* 6. Update/Promote Target rows                                  */
 /* ------------------------------------------------------------- */
+// const getupdateTargetData = async (req, res) => {
+//   try {
+//     const updatedTargets = req.body.targets;
+//     const today = moment().format("YYYY-MM-DD");
+
+//     for (const t of updatedTargets) {
+//       const { id, studentID, EmpID, HeaderName, SubHeaderName, SD, Prompt } = t;
+
+//       /* fetch existing row */
+//       const [[existing]] = await db.execute(
+//         "SELECT * FROM t_ngo_target WHERE id = ?",
+//         [id]
+//       );
+//       if (!existing) continue;
+
+//       const existingDate = moment(existing.DateTime).format("YYYY-MM-DD");
+//       let newCount = existing.count || 0;
+
+//       const changed =
+//         existing.HeaderName !== HeaderName ||
+//         existing.SubHeaderName !== SubHeaderName ||
+//         existing.SD !== SD ||
+//         existing.Prompt !== Prompt;
+
+//       /* increment count only once per day & only for Independent Response */
+//       if (existingDate !== today && Prompt === "Independent Response") {
+//         newCount++;
+//       }
+
+//       if (!changed && newCount === existing.count) continue; // nothing to do
+
+//       if (newCount > 3) {
+//         /* move to maintenance */
+//         await db.execute(
+//           `INSERT INTO t_ngo_maintainance
+//              (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt, DateTime)
+//            VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+//           [EmpID, studentID, HeaderName, SubHeaderName, SD, Prompt]
+//         );
+//         await db.execute("DELETE FROM t_ngo_target WHERE id = ?", [id]);
+//       } else {
+//         /* normal update */
+//         await db.execute(
+//           `UPDATE t_ngo_target
+//               SET HeaderName = ?,
+//                   SubHeaderName = ?,
+//                   SD = ?,
+//                   Prompt = ?,
+//                   DateTime = NOW(),
+//                   count = ?
+//             WHERE id = ?`,
+//           [HeaderName, SubHeaderName, SD, Prompt, newCount, id]
+//         );
+//       }
+//     }
+
+//     return res.json({ success: true, message: "Target data processed successfully" });
+//   } catch (err) {
+//     console.error("getupdateTargetData error:", err);
+//     return res.status(500).json({ success: false, error: err.message });
+//   }
+// };
 const getupdateTargetData = async (req, res) => {
   try {
     const updatedTargets = req.body.targets;
@@ -353,7 +415,7 @@ const getupdateTargetData = async (req, res) => {
     for (const t of updatedTargets) {
       const { id, studentID, EmpID, HeaderName, SubHeaderName, SD, Prompt } = t;
 
-      /* fetch existing row */
+      // Fetch existing row
       const [[existing]] = await db.execute(
         "SELECT * FROM t_ngo_target WHERE id = ?",
         [id]
@@ -363,21 +425,24 @@ const getupdateTargetData = async (req, res) => {
       const existingDate = moment(existing.DateTime).format("YYYY-MM-DD");
       let newCount = existing.count || 0;
 
+      // Check if any of the values have changed
       const changed =
         existing.HeaderName !== HeaderName ||
         existing.SubHeaderName !== SubHeaderName ||
         existing.SD !== SD ||
         existing.Prompt !== Prompt;
 
-      /* increment count only once per day & only for Independent Response */
+      // Increment count only once per day & only for Independent Response
       if (existingDate !== today && Prompt === "Independent Response") {
         newCount++;
       }
 
-      if (!changed && newCount === existing.count) continue; // nothing to do
+      // If nothing has changed and count remains the same, skip the update
+      if (!changed && newCount === existing.count) continue;
 
+      // Update logic: if more than 3, move to maintenance, else update normally
       if (newCount > 3) {
-        /* move to maintenance */
+        // Move to maintenance
         await db.execute(
           `INSERT INTO t_ngo_maintainance
              (EmpID, StudentID, HeaderName, SubHeaderName, SD, Prompt, DateTime)
@@ -386,18 +451,24 @@ const getupdateTargetData = async (req, res) => {
         );
         await db.execute("DELETE FROM t_ngo_target WHERE id = ?", [id]);
       } else {
-        /* normal update */
-        await db.execute(
-          `UPDATE t_ngo_target
-              SET HeaderName = ?,
-                  SubHeaderName = ?,
-                  SD = ?,
-                  Prompt = ?,
-                  DateTime = NOW(),
-                  count = ?
-            WHERE id = ?`,
-          [HeaderName, SubHeaderName, SD, Prompt, newCount, id]
-        );
+        // Normal update
+        const updateFields = [HeaderName, SubHeaderName, SD, Prompt, newCount, id];
+
+        // Only set DateTime if there is a change
+        // if (changed || newCount > existing.count) {
+        if (changed) {
+          await db.execute(
+            `UPDATE t_ngo_target
+                SET HeaderName = ?,
+                    SubHeaderName = ?,
+                    SD = ?,
+                    Prompt = ?,
+                    count = ?,
+                    DateTime = NOW() 
+              WHERE id = ?`,
+            updateFields
+          );
+        }
       }
     }
 
