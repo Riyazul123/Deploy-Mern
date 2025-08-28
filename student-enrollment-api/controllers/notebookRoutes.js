@@ -438,7 +438,7 @@ const getupdateTargetData = async (req, res) => {
       }
 
       // If nothing has changed and count remains the same, skip the update
-      if (!changed && newCount === existing.count) continue;
+      // if (!changed && newCount === existing.count) continue;
 
       // Update logic: if more than 3, move to maintenance, else update normally
       if (newCount > 3) {
@@ -456,7 +456,7 @@ const getupdateTargetData = async (req, res) => {
 
         // Only set DateTime if there is a change
         // if (changed || newCount > existing.count) {
-        if (changed) {
+        // if (changed) {
           await db.execute(
             `UPDATE t_ngo_target
                 SET HeaderName = ?,
@@ -468,7 +468,7 @@ const getupdateTargetData = async (req, res) => {
               WHERE id = ?`,
             updateFields
           );
-        }
+       // }
       }
     }
 
