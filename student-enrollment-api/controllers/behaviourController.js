@@ -256,18 +256,18 @@ const createEyeCommunication = async (req, res) => {
 
     const checkSql =
       `SELECT 1 FROM t_ngo_communication
-        WHERE studentID = ? AND CommunicationType = ?`;
+        WHERE studentID = ? AND CommunicationType = ? AND EmpID = ?`;
 
-    const [[exists]] = await db.query(checkSql, [studentID, CommunicationType]);
+    const [[exists]] = await db.query(checkSql, [studentID, CommunicationType, EmpID]);
 
     if (exists) {
       /* update existing */
       const updateSql =
         `UPDATE t_ngo_communication
             SET Prompted = ?, Independent = ?, DateTime = CURRENT_TIMESTAMP
-          WHERE studentID = ? AND CommunicationType = ?`;
+          WHERE studentID = ? AND CommunicationType = ? AND EmpID = ?`;
 
-      await db.query(updateSql, [Prompted, Independent, studentID, CommunicationType]);
+      await db.query(updateSql, [Prompted, Independent, studentID, CommunicationType, EmpID]);
 
       return res.status(200).json({ message: "Communication record updated successfully!" });
     }
@@ -311,8 +311,8 @@ const createCommunication = async (req, res) => {
       }
 
       const [[exists]] = await db.query(
-        `SELECT 1 FROM t_ngo_communication WHERE studentID = ? AND CommunicationType = ?`,
-        [rollNumber, type]
+        `SELECT 1 FROM t_ngo_communication WHERE studentID = ? AND CommunicationType = ? AND EmpID = ?`,
+        [rollNumber, type, empId]
       );
 
 
@@ -324,8 +324,8 @@ const createCommunication = async (req, res) => {
         await db.query(
           `UPDATE t_ngo_communication
               SET Prompted = ?, Independent = ?, DateTime = CURRENT_TIMESTAMP
-            WHERE studentID = ? AND CommunicationType = ?`,
-          [prompted, independent, rollNumber, type]
+            WHERE studentID = ? AND CommunicationType = ? AND EmpID = ?`,
+          [prompted, independent, rollNumber, type, empId]
         );
       } else {
         await db.execute(
